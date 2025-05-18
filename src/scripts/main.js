@@ -12,7 +12,7 @@ Hooks.on("ready", async function() {
 });
 
 Hooks.once('ready', () => {
-    if (foundry.utils.isNewerVersion(game.version, "12") && game.settings.get("8bit-movement", "disableRotationAnimation")) {
+    if (foundry.utils.isNewerVersion(game.version, "13") && game.settings.get("8bit-movement", "disableRotationAnimation")) {
         libWrapper.register('8bit-movement', 'Token.prototype.animate', function (wrapped, ...args) {
             const [attributes, options = {}] = args;
 
@@ -35,7 +35,7 @@ Hooks.on("renderTokenConfig", async function (sheet){
     else createConfigButtonsV9(sheet);
 })
 
-if (foundry.utils.isNewerVersion(game.version, "12")) {
+if (foundry.utils.isNewerVersion(game.version, "13")) {
     Hooks.on("canvasReady", async function (canvas) {
         canvas.tokens.placeables.forEach(token => {
             if (!token.document.getFlag("8bit-movement", "oldPosition")) {
