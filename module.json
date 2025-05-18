@@ -8,7 +8,7 @@
     "scripts/main.js"
   ],
   "styles": [
-    "./css/8bitmovement.css"
+    "./css/token-orientation.css"
   ],
   "url": "https://github.com/theCR0B0T/token-orientation",
   "manifest": "https://raw.githubusercontent.com/theCR0B0T/token-orientation/refs/heads/main/module.json",
