@@ -1,121 +1,55 @@
-<form autocomplete="off">
-  <div id="movement-types" class="form-group stacked">
-    {{#each config as |dirs type|}}
-      <div class="movement-block" data-type="{{type}}">
-        <header class="movement-header">
+<form class="flexcol" autocomplete="off">
+  <div id="movement-types" class="movement-type-list">
+    {{#each config as |cfg type|}}
+      <fieldset class="movement-type-group" data-type="{{type}}">
+        <legend>
           <h3>{{type}}</h3>
-          <select name="config.{{type}}.mode" class="image-mode">
-            <option value="1" {{#if (eq dirs.mode "1")}}selected{{/if}}>One Image</option>
-            <option value="2" {{#if (eq dirs.mode "2")}}selected{{/if}}>X/Y Axis</option>
-            <option value="4" {{#if (eq dirs.mode "4")}}selected{{/if}}>NESW</option>
+        </legend>
+
+        <div class="form-group">
+          <label>Layout</label>
+          <select name="config.{{type}}.layout" class="layout-select">
+            <option value="single" {{#ifEquals cfg.layout "single"}}selected{{/ifEquals}}>Single Image</option>
+            <option value="axis" {{#ifEquals cfg.layout "axis"}}selected{{/ifEquals}}>X/Y Axis</option>
+            <option value="cardinal" {{#ifEquals cfg.layout "cardinal"}}selected{{/ifEquals}}>Cardinal (N/E/S/W)</option>
           </select>
-          {{#unless (eq type "default")}}
-            <button type="button" class="remove-type"><i class="fas fa-trash"></i></button>
-          {{/unless}}
-        </header>
-        <div class="image-inputs">
-          {{#if (eq dirs.mode "1")}}
-            <div class="form-group image-field">
-              <label>Image</label>
-              <div class="image-picker">
-                {{filePicker target="config." type=type direction="all" value=dirs.all}}
-              </div>
-            </div>
-          {{/if}}
-          {{#if (eq dirs.mode "2")}}
-            {{#each ["x", "y"] as |dir|}}
-              <div class="form-group image-field">
-                <label>{{toUpperCase dir}}</label>
-                <div class="image-picker">
-                  {{filePicker target="config." type=type direction=dir value=(lookup dirs dir)}}
-                </div>
-              </div>
-            {{/each}}
-          {{/if}}
-          {{#if (eq dirs.mode "4")}}
-            {{#each ["N", "E", "S", "W"] as |dir|}}
-              <div class="form-group image-field">
-                <label>{{dir}}</label>
-                <div class="image-picker">
-                  {{filePicker target="config." type=type direction=dir value=(lookup dirs dir)}}
-                </div>
-              </div>
-            {{/each}}
-          {{/if}}
         </div>
-      </div>
+
+        <div class="direction-images">
+          {{#each cfg.images as |img dir|}}
+          <div class="form-group image-picker" data-dir="{{dir}}">
+            <label>{{toUpperCase dir}}</label>
+            <div class="form-fields">
+              <input type="text" name="config.{{@../key}}.images.{{dir}}" value="{{img}}" data-dtype="String">
+              <button type="button" class="file-picker" data-type="imagevideo" data-target="config.{{@../key}}.images.{{dir}}">
+                <i class="fas fa-file-import fa-fw"></i>
+              </button>
+            </div>
+            {{#if img}}
+            <img src="{{img}}" class="preview-img" style="max-height: 64px;"/>
+            {{/if}}
+          </div>
+          {{/each}}
+        </div>
+
+        <button type="button" class="remove-type" style="margin-top: 10px;">Remove</button>
+      </fieldset>
     {{/each}}
   </div>
 
-  <div class="form-group horizontal">
-    <label for="new-type-name">Add Movement Type</label>
-    <select id="new-type-name">
-      {{#each movementActions as |action|}}
-        <option value="{{action}}">{{action}}</option>
-      {{/each}}
-    </select>
-    <button type="button" id="add-type" class="small"><i class="fas fa-plus"></i></button>
+  <div class="form-group">
+    <label>Add Movement Type</label>
+    <div class="form-fields">
+      <select id="new-type-name">
+        {{#each movementActions}}
+        <option value="{{this}}">{{this}}</option>
+        {{/each}}
+      </select>
+      <button type="button" id="add-type"><i class="fas fa-plus"></i></button>
+    </div>
   </div>
 
   <footer class="sheet-footer">
-    <button type="submit" class="submit-button"><i class="fas fa-save"></i> Save</button>
+    <button type="submit" class="dialog-button default">Save</button>
   </footer>
 </form>
-
-<script>
-  Hooks.once('renderActorDirectionImageConfig', () => {
-    document.getElementById('add-type').addEventListener('click', () => {
-      const select = document.getElementById('new-type-name');
-      const type = select.value;
-      if (!type) return;
-      const container = document.getElementById('movement-types');
-      const html = `
-        <div class="movement-block" data-type="${type}">
-          <header class="movement-header">
-            <h3>${type}</h3>
-            <select name="config.${type}.mode" class="image-mode">
-              <option value="1">One Image</option>
-              <option value="2">X/Y Axis</option>
-              <option value="4">NESW</option>
-            </select>
-            <button type="button" class="remove-type"><i class="fas fa-trash"></i></button>
-          </header>
-          <div class="image-inputs"></div>
-        </div>`;
-      container.insertAdjacentHTML('beforeend', html);
-    });
-
-    document.addEventListener('click', (event) => {
-      if (event.target.closest('.remove-type')) {
-        const block = event.target.closest('.movement-block');
-        if (block) block.remove();
-      }
-    });
-  });
-</script>
-
-<style>
-  .movement-block {
-    background: var(--color-bg-light-5);
-    border: 1px solid var(--color-border-light-primary);
-    border-radius: 5px;
-    margin-bottom: 1rem;
-    padding: 0.5rem;
-  }
-  .movement-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-  }
-  .image-picker {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-  }
-  .image-picker img {
-    max-width: 48px;
-    max-height: 48px;
-    border: 1px solid var(--color-border-light);
-  }
-</style>

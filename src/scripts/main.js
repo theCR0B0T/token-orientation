@@ -33,9 +33,8 @@ Hooks.once("init", () => {
     default: {}
   });
 
-  Handlebars.registerHelper("toUpperCase", function(str) {
-    return str?.toUpperCase?.() || "";
-  });
+  Handlebars.registerHelper("ifEquals", (a, b, options) => a === b ? options.fn(this) : options.inverse(this));
+  Handlebars.registerHelper("toUpperCase", (str) => (str || "").toUpperCase());
 });
 
 Hooks.on("renderCharacterActorSheet", (app, html, data) => {
@@ -124,4 +123,19 @@ class ActorDirectionImageConfig extends FormApplication {
     const expanded = expandObject(formData);
     await this.actor.setFlag(MODULE_ID, "directionImages", expanded.config);
   }
+
+  async _render(...args) {
+  await super._render(...args);
+  this.form.querySelectorAll(".file-picker").forEach(button => {
+    const target = button.dataset.target;
+    new FilePicker({
+      type: button.dataset.type,
+      target,
+      callback: path => {
+        const input = this.form.querySelector(`[name="${target}"]`);
+        if (input) input.value = path;
+      }
+    }).render(true);
+  });
+}
 }
