@@ -8,8 +8,14 @@
       "name": "CR0B0T"
     }
   ],
-  "esmodules": [
-    "main.js"
+  "scripts": [
+    "main.js",
+    "scripts/helpers.js",
+    "scripts/constants.js",
+    "scripts/hooks.js",
+    "scripts/config-button.js",
+    "scripts/direction-manager.js",
+    "applications/actor-direction-config.js"
   ],
   "template": [
     "templates/actor-direction-config.html"
