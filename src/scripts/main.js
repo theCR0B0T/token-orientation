@@ -34,7 +34,7 @@ Hooks.once("init", () => {
   });
 });
 
-Hooks.on("renderCharacterActor", (app, html, data) => {
+Hooks.on("renderCharacterActorSheet", (app, html, data) => {
   if (!game.settings.get(MODULE_ID, "enableModule")) return;
   const configPermission = game.settings.get(MODULE_ID, "configPermission");
   if (game.user.role < configPermission) return;
