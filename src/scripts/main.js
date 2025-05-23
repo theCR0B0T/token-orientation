@@ -34,21 +34,19 @@ Hooks.once("init", () => {
   });
 });
 
-Hooks.on("renderCharacterActorSheet", (app, html, data) => {
+Hooks.on("renderActorSheet5eCharacter", (app, html, data) => {
   if (!game.settings.get(MODULE_ID, "enableModule")) return;
   const configPermission = game.settings.get(MODULE_ID, "configPermission");
   if (game.user.role < configPermission) return;
 
-  const nav = $(html).find("nav.tabs-right");
-  const tabs = $(html).find(".sheet-body .tab")
-  if (!nav.length || !tabs.length) return;
+  const titleElement = html.closest('.app').find('.window-title');
+  if (!titleElement.length || html.find('.direction-image-config').length) return;
 
-  // Add a new navigation tab
-  const button = $(`<a class="item" data-tab="direction-images"><i class="ph=compass"></i> Directional Images</a>`);
+  const button = $(`<a class="direction-image-config" style="margin-left: 5px;" title="Configure Directional Images"><i class="fas fa-compass"></i></a>`);
   button.on('click', () => {
     new ActorDirectionImageConfig(app.actor).render(true);
   });
-  nav.append(button);
+  titleElement.append(button);
 });
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
@@ -95,15 +93,25 @@ class ActorDirectionImageConfig extends FormApplication {
       id: "actor-direction-image-config",
       title: "Actor Directional Image Configuration",
       template: "modules/token-orientation/templates/actor-direction-config.html",
-      width: 600,
+      width: 700,
       height: "auto",
-      closeOnSubmit: true
+      closeOnSubmit: true,
+      classes: ["sheet", "actor-direction-config", "dark-theme"]
     });
   }
 
   getData() {
     const config = duplicate(this.actor.getFlag(MODULE_ID, "directionImages") || {});
-    return { config };
+    const movementActions = this._getMovementActions();
+    return {
+      config,
+      movementActions
+    };
+  }
+
+  _getMovementActions() {
+    const prototypeToken = this.actor.prototypeToken || {};
+    return ["default", "walk", "fly", "swim", "climb", "burrow"].filter(a => !Object.keys(this.actor.getFlag(MODULE_ID, "directionImages") || {}).includes(a));
   }
 
   async _updateObject(event, formData) {

@@ -1,101 +1,121 @@
-<form autocomplete="off" class="direction-form">
-  <div id="movement-types" class="flexcol">
+<form autocomplete="off">
+  <div id="movement-types" class="form-group stacked">
     {{#each config as |dirs type|}}
-      <fieldset data-type="{{type}}" class="direction-block">
-        <legend>{{type}}</legend>
-        <div class="grid grid-2col">
-          {{#each dirs as |img dir|}}
-            <div class="form-group">
-              <label>{{dir}}</label>
-              <input type="text" name="config.{{@../key}}.{{dir}}" value="{{img}}" placeholder="Image URL for {{dir}}" />
+      <div class="movement-block" data-type="{{type}}">
+        <header class="movement-header">
+          <h3>{{type}}</h3>
+          <select name="config.{{type}}.mode" class="image-mode">
+            <option value="1" {{#if (eq dirs.mode "1")}}selected{{/if}}>One Image</option>
+            <option value="2" {{#if (eq dirs.mode "2")}}selected{{/if}}>X/Y Axis</option>
+            <option value="4" {{#if (eq dirs.mode "4")}}selected{{/if}}>NESW</option>
+          </select>
+          {{#unless (eq type "default")}}
+            <button type="button" class="remove-type"><i class="fas fa-trash"></i></button>
+          {{/unless}}
+        </header>
+        <div class="image-inputs">
+          {{#if (eq dirs.mode "1")}}
+            <div class="form-group image-field">
+              <label>Image</label>
+              <div class="image-picker">
+                {{filePicker target="config." type=type direction="all" value=dirs.all}}
+              </div>
             </div>
-          {{/each}}
+          {{/if}}
+          {{#if (eq dirs.mode "2")}}
+            {{#each ["x", "y"] as |dir|}}
+              <div class="form-group image-field">
+                <label>{{dir.toUpperCase()}}</label>
+                <div class="image-picker">
+                  {{filePicker target="config." type=type direction=dir value=(lookup dirs dir)}}
+                </div>
+              </div>
+            {{/each}}
+          {{/if}}
+          {{#if (eq dirs.mode "4")}}
+            {{#each ["N", "E", "S", "W"] as |dir|}}
+              <div class="form-group image-field">
+                <label>{{dir}}</label>
+                <div class="image-picker">
+                  {{filePicker target="config." type=type direction=dir value=(lookup dirs dir)}}
+                </div>
+              </div>
+            {{/each}}
+          {{/if}}
         </div>
-        <button type="button" class="remove-type"><i class="fas fa-trash"></i> Remove</button>
-      </fieldset>
+      </div>
     {{/each}}
   </div>
 
-  <hr />
-
-  <div class="form-group flexrow">
-    <label>Add Movement Type</label>
-    <input type="text" id="new-type-name" placeholder="e.g., burrow" />
-    <button type="button" id="add-type"><i class="fas fa-plus"></i> Add</button>
+  <div class="form-group horizontal">
+    <label for="new-type-name">Add Movement Type</label>
+    <select id="new-type-name">
+      {{#each movementActions as |action|}}
+        <option value="{{action}}">{{action}}</option>
+      {{/each}}
+    </select>
+    <button type="button" id="add-type" class="small"><i class="fas fa-plus"></i></button>
   </div>
 
-  <footer class="sheet-footer flexrow">
+  <footer class="sheet-footer">
     <button type="submit" class="submit-button"><i class="fas fa-save"></i> Save</button>
   </footer>
 </form>
 
 <script>
-  document.getElementById('add-type')?.addEventListener('click', () => {
-    const type = document.getElementById('new-type-name').value.trim();
-    if (!type) return;
-    const container = document.getElementById('movement-types');
-    const html = `
-      <fieldset data-type="${type}" class="direction-block">
-        <legend>${type}</legend>
-        <div class="grid grid-2col">
-          ${['N', 'E', 'S', 'W'].map(dir => `
-            <div class="form-group">
-              <label>${dir}</label>
-              <input type="text" name="config.${type}.${dir}" placeholder="Image URL for ${dir}" />
-            </div>
-          `).join('')}
-        </div>
-        <button type="button" class="remove-type"><i class="fas fa-trash"></i> Remove</button>
-      </fieldset>
-    `;
-    container.insertAdjacentHTML('beforeend', html);
-    document.getElementById('new-type-name').value = "";
-  });
+  Hooks.once('renderActorDirectionImageConfig', () => {
+    document.getElementById('add-type').addEventListener('click', () => {
+      const select = document.getElementById('new-type-name');
+      const type = select.value;
+      if (!type) return;
+      const container = document.getElementById('movement-types');
+      const html = `
+        <div class="movement-block" data-type="${type}">
+          <header class="movement-header">
+            <h3>${type}</h3>
+            <select name="config.${type}.mode" class="image-mode">
+              <option value="1">One Image</option>
+              <option value="2">X/Y Axis</option>
+              <option value="4">NESW</option>
+            </select>
+            <button type="button" class="remove-type"><i class="fas fa-trash"></i></button>
+          </header>
+          <div class="image-inputs"></div>
+        </div>`;
+      container.insertAdjacentHTML('beforeend', html);
+    });
 
-  document.addEventListener('click', (event) => {
-    if (event.target.closest('.remove-type')) {
-      const fieldset = event.target.closest('fieldset');
-      if (fieldset) fieldset.remove();
-    }
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('.remove-type')) {
+        const block = event.target.closest('.movement-block');
+        if (block) block.remove();
+      }
+    });
   });
 </script>
 
 <style>
-  .direction-form fieldset {
-    margin-bottom: 1em;
+  .movement-block {
+    background: var(--color-bg-light-5);
     border: 1px solid var(--color-border-light-primary);
-    padding: 1em;
-    border-radius: 4px;
-    background: var(--color-bg-light-2);
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
   }
-
-  .direction-form legend {
-    font-weight: bold;
-    font-size: 1.1em;
-    padding: 0 0.5em;
+  .movement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
   }
-
-  .direction-form .form-group label {
-    display: block;
-    font-weight: normal;
-    margin-bottom: 0.2em;
+  .image-picker {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
   }
-
-  .direction-form .form-group input {
-    width: 100%;
-  }
-
-  .direction-form .grid-2col {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75em;
-  }
-
-  .direction-form .form-group.flexrow input {
-    flex: 1;
-  }
-
-  .direction-form button {
-    margin-top: 0.5em;
+  .image-picker img {
+    max-width: 48px;
+    max-height: 48px;
+    border: 1px solid var(--color-border-light);
   }
 </style>
