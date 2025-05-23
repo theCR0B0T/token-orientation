@@ -1,51 +1,101 @@
-<form autocomplete="off">
-  <div id="movement-types">
+<form autocomplete="off" class="direction-form">
+  <div id="movement-types" class="flexcol">
     {{#each config as |dirs type|}}
-      <fieldset data-type="{{type}}">
+      <fieldset data-type="{{type}}" class="direction-block">
         <legend>{{type}}</legend>
-        {{#each dirs as |img dir|}}
-          <div class="form-group">
-            <label>{{dir}}</label>
-            <input type="text" name="config.{{@../key}}.{{dir}}" value="{{img}}" placeholder="Image URL for {{dir}}" />
-          </div>
-        {{/each}}
-        <button type="button" class="remove-type">Remove</button>
+        <div class="grid grid-2col">
+          {{#each dirs as |img dir|}}
+            <div class="form-group">
+              <label>{{dir}}</label>
+              <input type="text" name="config.{{@../key}}.{{dir}}" value="{{img}}" placeholder="Image URL for {{dir}}" />
+            </div>
+          {{/each}}
+        </div>
+        <button type="button" class="remove-type"><i class="fas fa-trash"></i> Remove</button>
       </fieldset>
     {{/each}}
   </div>
-  <div class="form-group">
+
+  <hr />
+
+  <div class="form-group flexrow">
     <label>Add Movement Type</label>
     <input type="text" id="new-type-name" placeholder="e.g., burrow" />
-    <button type="button" id="add-type">Add</button>
+    <button type="button" id="add-type"><i class="fas fa-plus"></i> Add</button>
   </div>
-  <footer>
-    <button type="submit">Save</button>
+
+  <footer class="sheet-footer flexrow">
+    <button type="submit" class="submit-button"><i class="fas fa-save"></i> Save</button>
   </footer>
 </form>
 
 <script>
-  document.getElementById('add-type').addEventListener('click', () => {
+  document.getElementById('add-type')?.addEventListener('click', () => {
     const type = document.getElementById('new-type-name').value.trim();
     if (!type) return;
     const container = document.getElementById('movement-types');
     const html = `
-      <fieldset data-type=\"${type}\">
+      <fieldset data-type="${type}" class="direction-block">
         <legend>${type}</legend>
-        ${['N', 'E', 'S', 'W'].map(dir => `
-          <div class=\"form-group\">
-            <label>${dir}</label>
-            <input type=\"text\" name=\"config.${type}.${dir}\" placeholder=\"Image URL for ${dir}\" />
-          </div>`).join('')}
-        <button type=\"button\" class=\"remove-type\">Remove</button>
+        <div class="grid grid-2col">
+          ${['N', 'E', 'S', 'W'].map(dir => `
+            <div class="form-group">
+              <label>${dir}</label>
+              <input type="text" name="config.${type}.${dir}" placeholder="Image URL for ${dir}" />
+            </div>
+          `).join('')}
+        </div>
+        <button type="button" class="remove-type"><i class="fas fa-trash"></i> Remove</button>
       </fieldset>
     `;
     container.insertAdjacentHTML('beforeend', html);
+    document.getElementById('new-type-name').value = "";
   });
 
   document.addEventListener('click', (event) => {
-    if (event.target.classList.contains('remove-type')) {
+    if (event.target.closest('.remove-type')) {
       const fieldset = event.target.closest('fieldset');
       if (fieldset) fieldset.remove();
     }
   });
 </script>
+
+<style>
+  .direction-form fieldset {
+    margin-bottom: 1em;
+    border: 1px solid var(--color-border-light-primary);
+    padding: 1em;
+    border-radius: 4px;
+    background: var(--color-bg-light-2);
+  }
+
+  .direction-form legend {
+    font-weight: bold;
+    font-size: 1.1em;
+    padding: 0 0.5em;
+  }
+
+  .direction-form .form-group label {
+    display: block;
+    font-weight: normal;
+    margin-bottom: 0.2em;
+  }
+
+  .direction-form .form-group input {
+    width: 100%;
+  }
+
+  .direction-form .grid-2col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75em;
+  }
+
+  .direction-form .form-group.flexrow input {
+    flex: 1;
+  }
+
+  .direction-form button {
+    margin-top: 0.5em;
+  }
+</style>
