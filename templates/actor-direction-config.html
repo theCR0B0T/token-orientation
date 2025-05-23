@@ -1,104 +1,98 @@
-<form class="direction-config-form">
-  <h2>Default Movement Images</h2>
-  <div class="direction-group" data-type="default">
-    {{#each (lookup config "default") as |img dir|}}
-    <div class="form-group">
-      <label>{{dir}}</label>
-      <input type="text" name="config.default.{{dir}}" value="{{img}}" placeholder="Image URL">
-      <img src="{{img}}" class="preview" style="max-width: 100px; max-height: 100px;">
-    </div>
-    {{/each}}
-    {{#unless (lookup config "default")}}
-    <div class="form-group">
-      <label>N</label>
-      <input type="text" name="config.default.N" value="">
-      <img class="preview" style="max-width: 100px; max-height: 100px;">
-    </div>
-    <div class="form-group">
-      <label>E</label>
-      <input type="text" name="config.default.E" value="">
-      <img class="preview" style="max-width: 100px; max-height: 100px;">
-    </div>
-    <div class="form-group">
-      <label>S</label>
-      <input type="text" name="config.default.S" value="">
-      <img class="preview" style="max-width: 100px; max-height: 100px;">
-    </div>
-    <div class="form-group">
-      <label>W</label>
-      <input type="text" name="config.default.W" value="">
-      <img class="preview" style="max-width: 100px; max-height: 100px;">
-    </div>
-    {{/unless}}
-  </div>
-
-  <hr>
-
-  <h2>Custom Movement Types</h2>
-  <div id="movement-types">
-    {{#each config as |dirs type|}}
-      {{#unless (eq type "default")}}
-      <fieldset class="movement-config" data-type="{{type}}">
-        <legend>
-          {{type}} <button type="button" class="remove-type" data-type="{{type}}">Remove</button>
-        </legend>
-        {{#each dirs as |img dir|}}
-        <div class="form-group">
-          <label>{{dir}}</label>
-          <input type="text" name="config.{{@../type}}.{{dir}}" value="{{img}}">
-          <img src="{{img}}" class="preview" style="max-width: 100px; max-height: 100px;">
-        </div>
+<form autocomplete="off">
+    <div id="movement-types">
+        {{#each config as |dirs type|}}
+            <fieldset data-type="{{type}}" {{#if (eq type "default")}}class="default-fieldset"{{/if}}>
+                <legend>
+                    {{type}}
+                    {{#if (eq type "default")}}
+                        <i class="fas fa-info-circle" title="This is the fallback movement type. If no specific images are found for the current movement action, these will be used."></i>
+                    {{/if}}
+                </legend>
+                {{#each ['N', 'E', 'S', 'W'] as |dir|}}
+                    <div class="form-group">
+                        <label>{{dir}}</label>
+                        <input type="text" name="config.{{type}}.{{dir}}" value="{{lookup dirs dir}}" placeholder="Image URL for {{dir}}" data-dtype="String"/>
+                        <a class="file-picker" data-type="image" data-target="config.{{type}}.{{dir}}" title="Browse Files"><i class="fas fa-file-import fa-fw"></i></a>
+                        <img class="image-preview" src="{{lookup dirs dir}}" style="max-width: 50px; max-height: 50px; margin-left: 5px; display: none;"/>
+                    </div>
+                {{/each}}
+                {{#unless (eq type "default")}}
+                    <button type="button" class="remove-type" data-type="{{type}}"><i class="fas fa-trash"></i> Remove</button>
+                {{/unless}}
+            </fieldset>
         {{/each}}
-      </fieldset>
-      {{/unless}}
-    {{/each}}
-  </div>
-
-  <div class="form-group">
-    <label for="new-movement-type">Add Movement Type</label>
-    <input type="text" id="new-movement-type" placeholder="e.g., fly">
-    <button type="button" id="add-movement-type">Add</button>
-  </div>
-
-  <footer class="sheet-footer flexrow">
-    <button type="submit"><i class="fas fa-save"></i> Save</button>
-  </footer>
+    </div>
+    <div class="form-group action-buttons">
+        <label>Add New Movement Type</label>
+        <input type="text" id="new-type-name" placeholder="e.g., burrow, fly, swim" />
+        <button type="button" id="add-type"><i class="fas fa-plus"></i> Add Type</button>
+    </div>
 </form>
 
-<script>
-  Hooks.once("renderActorDirectionImageConfig", (app, html) => {
-    const container = html[0].querySelector("#movement-types");
-
-    html[0].querySelector("#add-movement-type").addEventListener("click", () => {
-      const newType = html[0].querySelector("#new-movement-type").value.trim();
-      if (!newType || container.querySelector(`[data-type=\"${newType}\"]`)) return;
-
-      const fieldset = document.createElement("fieldset");
-      fieldset.classList.add("movement-config");
-      fieldset.setAttribute("data-type", newType);
-      fieldset.innerHTML = `
-        <legend>
-          ${newType} <button type="button" class="remove-type" data-type="${newType}">Remove</button>
-        </legend>
-        ${["N", "E", "S", "W"].map(dir => `
-          <div class="form-group">
-            <label>${dir}</label>
-            <input type="text" name="config.${newType}.${dir}" value="">
-            <img class="preview" style="max-width: 100px; max-height: 100px;">
-          </div>
-        `).join("")}
-      `;
-      container.appendChild(fieldset);
-    });
-
-    html.on("click", ".remove-type", event => {
-      const type = event.currentTarget.dataset.type;
-      html.find(`fieldset[data-type=\"${type}\"]`).remove();
-    });
-
-    html.on("input", "input[type='text']", function () {
-      const img = this.closest(".form-group").querySelector("img");
-      img.src = this.value;
-    });
-  });
-</script>
+<style>
+    /* Basic styling for the form */
+    #movement-types fieldset {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        position: relative; /* For the remove button positioning */
+    }
+    #movement-types legend {
+        font-weight: bold;
+        padding: 0 10px;
+        width: auto;
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .form-group label {
+        flex: 0 0 50px; /* Adjust label width */
+        margin-right: 10px;
+    }
+    .form-group input[type="text"] {
+        flex: 1;
+        margin-right: 5px;
+    }
+    .file-picker {
+        color: #999;
+        cursor: pointer;
+        margin-right: 5px;
+    }
+    .file-picker:hover {
+        color: #f1d446;
+    }
+    .remove-type {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+    }
+    .remove-type:hover {
+        background: #c82333;
+    }
+    .default-fieldset .remove-type {
+        display: none; /* Hide remove button for default */
+    }
+    .action-buttons {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+    }
+    .action-buttons input {
+        margin-right: 10px;
+    }
+    .image-preview {
+        border: 1px solid #ccc;
+        border-radius: 3px;
+    }
+</style>
