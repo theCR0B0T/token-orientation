@@ -34,19 +34,34 @@ Hooks.once("init", () => {
   });
 });
 
-Hooks.on("renderActorSheet", (app, html, data) => {
+Hooks.on("ready", () => {
   if (!game.settings.get(MODULE_ID, "enableModule")) return;
-  if (game.user.role < game.settings.get(MODULE_ID, "configPermission")) return;
+  const configPermission = game.settings.get(MODULE_ID, "configPermission");
 
-  const titleElement = html.closest('.app').find('.window-title');
-  if (!titleElement.length) return;
+  const dnd5eSystem = game.systems.get("dnd5e");
+  if (!dnd5eSystem || !CONFIG.Actor.sheetClasses.character) return;
 
-  const button = $(`<a class="popout" style="margin-left: 5px;" title="Configure Directional Images"><i class="fas fa-compass"></i></a>`);
-  button.on('click', () => {
-    new ActorDirectionImageConfig(app.actor).render(true);
-  });
+  const sheetClass = CONFIG.Actor.sheetClasses.character["dnd5e.CharacterSheet5e"].cls;
+  if (!sheetClass.prototype._originalRender) {
+    sheetClass.prototype._originalRender = sheetClass.prototype._render;
+    sheetClass.prototype._render = async function (...args) {
+      await this._originalRender(...args);
 
-  titleElement.append(button);
+      if (game.user.role < configPermission) return;
+
+      const html = this.element;
+      const titleElement = html.find('.window-title');
+      if (!titleElement.length) return;
+
+      if (!html.find('.direction-image-config').length) {
+        const button = $(`<a class="direction-image-config" style="margin-left: 5px;" title="Configure Directional Images"><i class="fas fa-compass"></i></a>`);
+        button.on('click', () => {
+          new ActorDirectionImageConfig(this.actor).render(true);
+        });
+        titleElement.append(button);
+      }
+    };
+  }
 });
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
