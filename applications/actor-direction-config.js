@@ -1,4 +1,4 @@
-import { MODULE_ID } from "./constants.js";
+const MODULE_ID = "token-orientation";
 
 export class ActorDirectionImageConfig extends FormApplication {
   constructor(actor) {
