@@ -38,14 +38,14 @@ Hooks.on("ready", () => {
   if (!game.settings.get(MODULE_ID, "enableModule")) return;
   const configPermission = game.settings.get(MODULE_ID, "configPermission");
 
-  const dnd5eSystem = game.systems.get("dnd5e");
-  if (!dnd5eSystem || !CONFIG.Actor.sheetClasses.character) return;
+  const gameSystem = game.system.id;
+  if (!gameSystem || !CONFIG.Actor.sheetClasses.character) return;
 
-  const sheetClass = CONFIG.Actor.sheetClasses.character["dnd5e.CharacterSheet5e"].cls;
-  if (!sheetClass.prototype._originalRender) {
-    sheetClass.prototype._originalRender = sheetClass.prototype._render;
-    sheetClass.prototype._render = async function (...args) {
-      await this._originalRender(...args);
+  const sheetClass = CONFIG.Actor.sheetClasses.character["dnd5e.CharacterActorSheet"].cls;
+  //if (!sheetClass.prototype._originalRender) {
+    //sheetClass.prototype._originalRender = sheetClass.prototype._render;
+    //sheetClass.prototype._render = async function (...args) {
+      //await this._originalRender(...args);
 
       if (game.user.role < configPermission) return;
 
@@ -60,8 +60,8 @@ Hooks.on("ready", () => {
         });
         titleElement.append(button);
       }
-    };
-  }
+    //};
+  //}
 });
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {

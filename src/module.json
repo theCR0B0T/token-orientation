@@ -2,7 +2,7 @@
   "id": "token-orientation",
   "title": "Token Orientation",
   "description": "A Foundry VTT module that changes the token image based on the direction they are facing.",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "authors": [
     {
       "name": "CR0B0T"
@@ -10,6 +10,9 @@
   ],
   "esmodules": [
     "scripts/main.js"
+  ],
+  "template": [
+    "templates/actor-direction-config.html"
   ],
   "url": "https://github.com/theCR0B0T/token-orientation",
   "manifest": "https://raw.githubusercontent.com/theCR0B0T/token-orientation/refs/heads/main/src/module.json",
