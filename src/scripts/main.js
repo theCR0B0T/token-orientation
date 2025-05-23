@@ -39,7 +39,7 @@ Hooks.on("renderCharacterActorSheet", (app, html, data) => {
   const configPermission = game.settings.get(MODULE_ID, "configPermission");
   if (game.user.role < configPermission) return;
 
-  const nav = $(html).find("nav.sheet-navigation");
+  const nav = $(html).find("nav.tabs-right");
   const tabs = $(html).find(".sheet-body .tab")
   if (!nav.length || !tabs.length) return;
 
