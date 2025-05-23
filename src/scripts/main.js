@@ -38,24 +38,30 @@ Hooks.on("renderActorSheet", (app, html, data) => {
   if (!game.settings.get(MODULE_ID, "enableModule")) return;
   if (game.user.role < game.settings.get(MODULE_ID, "configPermission")) return;
 
-  const nav = html.find("nav.sheet-navigation");
-  const tabs = html.find(".sheet-body .tab")
-  if (!nav.length || !tabs.length) return;
+  const navTabs = html.find("nav.tabs[data-group='primary']");
+  const tabContent = html.find(".sheet-body");
 
-  // Add a new navigation tab
-  const button = $(`<a class="item" data-tab="direction-images"><i class="fas fa-directions"></i> Directional Images</a>`);
-  nav.append(button);
+  if (!navTabs.length || !tabContent.length) return;
 
-  // Add the new tab content
-  const content = $(`<div class="tab" data-tab="direction-images"></div>`);
-  content.append(`<div class="direction-config"></div>`);
-  tabs.last().after(content);
+  // Create tab button with compass icon
+  const tabButton = $(`
+    <a class="item" data-tab="direction-images" data-action="tab">
+      <i class="fas fa-compass"></i>
+    </a>
+  `);
+  navTabs.append(tabButton);
 
-  // Render the config form into the tab
+  // Create tab content container
+  const tabPanel = $(`<div class="tab" data-tab="direction-images"></div>`);
+  const wrapper = $(`<div class="direction-config"></div>`);
+  tabPanel.append(wrapper);
+  tabContent.append(tabPanel);
+
+  // Inject custom UI
   const form = new ActorDirectionImageConfig(app.actor);
-  form.render(false, { renderContext: null, viewOnly: false });
+  form.render(false);
   form._renderInner().then(inner => {
-    content.find(".direction-config").append(inner);
+    wrapper.append(inner);
   });
 });
 
