@@ -32,6 +32,10 @@ Hooks.once("init", () => {
     type: Object,
     default: {}
   });
+
+  Handlebars.registerHelper("toUpperCase", function(str) {
+    return str?.toUpperCase?.() || "";
+  });
 });
 
 Hooks.on("renderCharacterActorSheet", (app, html, data) => {

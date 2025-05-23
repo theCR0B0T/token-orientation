@@ -25,7 +25,7 @@
           {{#if (eq dirs.mode "2")}}
             {{#each ["x", "y"] as |dir|}}
               <div class="form-group image-field">
-                <label>{{dir.toUpperCase()}}</label>
+                <label>{{toUpperCase dir}}</label>
                 <div class="image-picker">
                   {{filePicker target="config." type=type direction=dir value=(lookup dirs dir)}}
                 </div>
