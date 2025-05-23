@@ -1,8 +1,5 @@
 const MODULE_ID = "token-orientation";
 
-// Import ActorSheet5eCharacter for extending, not for direct modification
-import { ActorSheet5eCharacter } from "../../../systems/dnd5e/module/actor/sheets/character.js";
-
 Hooks.once("init", () => {
     game.settings.register(MODULE_ID, "enableModule", {
         name: "Enable Token Orientation Module",
@@ -31,10 +28,10 @@ Hooks.once("init", () => {
     game.settings.register(MODULE_ID, "defaultDirectionImages", {
         name: "Default Directional Images",
         scope: "world",
-        config: false, // This setting is not directly configurable via the settings menu
+        config: false,
         type: Object,
         default: {
-            "default": { // Ensure a default movement type is always present
+            "default": {
                 "N": "",
                 "E": "",
                 "S": "",
@@ -44,9 +41,7 @@ Hooks.once("init", () => {
     });
 });
 
-// ActorDirectionImageConfig remains largely the same, but it doesn't need to extend FormApplication directly in this usage.
-// It will be rendered *within* the ActorSheet, so it's more of a template and data renderer.
-// However, keeping it as a FormApplication is fine if you intend to use its submission logic later.
+// ActorDirectionImageConfig remains the same as previously corrected
 class ActorDirectionImageConfig extends FormApplication {
     constructor(object, options) {
         super(object, options);
@@ -57,41 +52,28 @@ class ActorDirectionImageConfig extends FormApplication {
         return mergeObject(super.defaultOptions, {
             id: "actor-direction-image-config",
             title: "Actor Directional Image Configuration",
-            template: `modules/${MODULE_ID}/templates/actor-direction-config.html`, // Correct template path
+            template: `modules/${MODULE_ID}/templates/actor-direction-config.html`,
             width: 600,
             height: "auto",
-            closeOnSubmit: false, // We don't want the inner form to close the whole sheet
-            submitOnChange: true, // Automatically save changes when fields are modified
-            submitOnClose: true // Save changes when the sheet is closed
+            closeOnSubmit: false,
+            submitOnChange: true,
+            submitOnClose: true
         });
     }
 
-    /**
-     * Get the data for the form.
-     * Includes both actor-specific and world-level default images.
-     */
     getData() {
         const actorConfig = duplicate(this.actor.getFlag(MODULE_ID, "directionImages") || {});
         const defaultConfig = game.settings.get(MODULE_ID, "defaultDirectionImages");
-
-        // Merge actor-specific config with default images to ensure all directions are present
-        // and to show placeholders for default images.
         const config = mergeObject(defaultConfig, actorConfig);
-
         return {
             config: config,
-            isGM: game.user.isGM // Pass GM status to the template for conditional rendering
+            isGM: game.user.isGM
         };
     }
 
-    /**
-     * Activates event listeners for the form.
-     * @param {jQuery} html The rendered HTML of the form.
-     */
     activateListeners(html) {
         super.activateListeners(html);
 
-        // Add Movement Type button
         html.find('#add-type').on('click', event => {
             const typeInput = html.find('#new-type-name');
             const type = typeInput.val().trim();
@@ -104,7 +86,6 @@ class ActorDirectionImageConfig extends FormApplication {
                 return;
             }
 
-            // Manually add the new fieldset to the DOM and then call render to update the form data
             const container = html.find('#movement-types');
             const newFieldset = `
                 <fieldset data-type="${type}">
@@ -119,16 +100,11 @@ class ActorDirectionImageConfig extends FormApplication {
                 </fieldset>
             `;
             container.append(newFieldset);
-            typeInput.val(''); // Clear the input field
-
-            // Re-bind file pickers for the new elements
-            this._activateFilePickers(html);
-
-            // Important: Call render again to refresh the data and potentially save changes
+            typeInput.val('');
+            this._activateFilePickers(html); // Make sure this line exists if you have _activateFilePickers
             this.render(true);
         });
 
-        // Remove Movement Type button
         html.find('.remove-type').on('click', async event => {
             const button = $(event.currentTarget);
             const typeToRemove = button.data('type');
@@ -150,17 +126,13 @@ class ActorDirectionImageConfig extends FormApplication {
 
                 if (!dialogResult) return;
 
-                // Create a new object without the type to remove
                 const newConfig = duplicate(currentConfig);
                 delete newConfig[typeToRemove];
                 await this.actor.setFlag(MODULE_ID, "directionImages", newConfig);
-
-                // Re-render the form to reflect the change
                 this.render(true);
             }
         });
 
-        // Add a "browse" button for image selection
         html.find('.file-picker').on('click', event => {
             const target = event.currentTarget.dataset.target;
             new FilePicker({
@@ -169,12 +141,11 @@ class ActorDirectionImageConfig extends FormApplication {
                 callback: path => {
                     const input = html.find(`[name="${target}"]`);
                     input.val(path);
-                    input.trigger('change'); // Trigger change to ensure _updateObject picks it up
+                    input.trigger('change');
                 }
             }).browse();
         });
 
-        // Add preview functionality
         html.find('input[type="text"]').on('change', event => {
             const input = $(event.currentTarget);
             const imgPath = input.val();
@@ -189,26 +160,12 @@ class ActorDirectionImageConfig extends FormApplication {
             } else {
                 preview.hide();
             }
-        }).trigger('change'); // Trigger on load to show existing previews
+        }).trigger('change');
     }
 
-    /**
-     * This method is called when the form is submitted.
-     * @param {Event} event The submit event.
-     * @param {Object} formData The form data.
-     */
     async _updateObject(event, formData) {
         const expanded = expandObject(formData);
-        // We only care about the 'config' part of the expanded data
         const newConfig = expanded.config || {};
-
-        // Get current actor flags
-        const currentFlags = this.actor.getFlag(MODULE_ID, "directionImages") || {};
-
-        // Merge the new configuration with the existing flags.
-        // This handles additions, deletions, and updates correctly.
-        // We need to be careful with merging, as deep merging can be tricky for removals.
-        // A simpler approach is to replace the whole flag with the updated data.
         await this.actor.setFlag(MODULE_ID, "directionImages", newConfig);
     }
 }
@@ -216,14 +173,20 @@ class ActorDirectionImageConfig extends FormApplication {
 
 // Hook to add the new tab to the character sheet
 Hooks.on("renderActorSheet5eCharacter", (app, html, data) => {
-    // Only add the tab if the module is enabled and the user has permission
     if (!game.settings.get(MODULE_ID, "enableModule")) return;
     if (game.user.role < game.settings.get(MODULE_ID, "configPermission")) return;
 
-    // Get the navigation tabs
-    const tabs = app._tabs[0]; // Assuming the first tab group is the primary navigation
+    // Use app._tabs to get the tab group.
+    // The dnd5e sheet's primary tabs are usually in app._tabs[0]
+    const tabs = app._tabs.find(t => t.group === "primary"); // More robust way to find the primary tab group
+
+    if (!tabs) {
+        console.warn(`${MODULE_ID} | Could not find primary tab group on ActorSheet5eCharacter.`);
+        return;
+    }
 
     // Add a new tab button
+    // Ensure the data-tab matches the tab content data-tab
     const tabButton = $(`<a class="item" data-tab="token-orientation"><i class="fas fa-compass"></i> Orientation</a>`);
     const tabContent = $(`<div class="tab" data-tab="token-orientation"></div>`);
 
@@ -235,58 +198,52 @@ Hooks.on("renderActorSheet5eCharacter", (app, html, data) => {
 
     // Render the ActorDirectionImageConfig form inside the new tab content
     const form = new ActorDirectionImageConfig(app.actor, { parent: app });
-    form.render(true, { html: tabContent });
-
-    // Activate the new tab using Foundry's tab management
-    tabs.activate("token-orientation");
+    // Use .then() to ensure the form is rendered before attempting to activate the tab
+    form.render(true, { html: tabContent }).then(() => {
+        // Activate the new tab using Foundry's tab management
+        // This makes sure the tab is visible after rendering
+        tabs.activate("token-orientation");
+    });
 });
 
 
 // Hook for token movement
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
     if (!game.settings.get(MODULE_ID, "enableModule")) return;
-    // Only proceed if x or y coordinates are changing
     if (!("x" in updateData || "y" in updateData)) return;
 
-    const token = tokenDoc.object; // Get the Token object from the TokenDocument
+    const token = tokenDoc.object;
     if (!token) return;
 
-    // Calculate movement delta
     const dx = (updateData.x ?? token.x) - token.x;
     const dy = (updateData.y ?? token.y) - token.y;
 
-    // If there's no actual movement, skip
     if (dx === 0 && dy === 0) return;
 
     let dir;
-    // Determine primary direction
     if (Math.abs(dx) > Math.abs(dy)) {
         dir = dx > 0 ? "E" : "W";
-    } else { // dy is greater or equal to dx (including vertical-only movement)
+    } else {
         dir = dy > 0 ? "S" : "N";
     }
 
     const actor = token.actor;
     if (!actor) return;
 
-    // Get current movement action from token document (or default to 'default')
     const movementAction = token.document.getFlag(MODULE_ID, "movementAction") || "default";
 
-    // Retrieve images from actor flags and world settings
     const actorImages = actor.getFlag(MODULE_ID, "directionImages") || {};
     const defaultImages = game.settings.get(MODULE_ID, "defaultDirectionImages") || {};
 
-    // Prioritize actor's specific images, then actor's 'default', then world 'default'
     let image = actorImages?.[movementAction]?.[dir];
     if (!image) {
-        image = actorImages?.default?.[dir]; // Fallback to actor's default movement type
+        image = actorImages?.default?.[dir];
     }
     if (!image) {
-        image = defaultImages?.default?.[dir]; // Fallback to world's default movement type
+        image = defaultImages?.default?.[dir];
     }
 
     if (image && token.document.texture.src !== image) {
-        // Prevent infinite loop if texture.src is updated
         options.tokenOrientationApplied = true;
         await token.document.update({ texture: { src: image } });
     }
@@ -294,7 +251,7 @@ Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
 
 // Add a context menu option to tokens to set their movement action
 Hooks.on("getTokenConfigButtons", (config, buttons) => {
-    if (!game.user.isGM) return; // Only GMs can set movement action for now
+    if (!game.user.isGM) return;
     buttons.unshift({
         label: "Set Movement Action",
         class: "set-movement-action",
@@ -303,11 +260,10 @@ Hooks.on("getTokenConfigButtons", (config, buttons) => {
             const token = config.token;
             const currentAction = token.document.getFlag(MODULE_ID, "movementAction") || "default";
 
-            // Get available movement types from the actor's configuration
             const actorImages = token.actor.getFlag(MODULE_ID, "directionImages") || {};
             const movementTypes = Object.keys(actorImages);
             if (!movementTypes.includes("default")) {
-                movementTypes.unshift("default"); // Ensure 'default' is always an option
+                movementTypes.unshift("default");
             }
 
             const content = `<div class="form-group">
