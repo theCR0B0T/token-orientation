@@ -1,9 +1,28 @@
-const DIRECTION_IMAGES = {
-  N: "https://assets.forge-vtt.com/678456b573282f821685767d/Zombie_Default_P2.png",
-  E: "https://assets.forge-vtt.com/678456b573282f821685767d/Zombie_Default_P1.png",
-  S: "https://assets.forge-vtt.com/678456b573282f821685767d/Zombie_Default_P4.png",
-  W: "https://assets.forge-vtt.com/678456b573282f821685767d/Zombie_Default_P3.png"
-};
+const MODULE_ID = "token-orientation";
+
+Hooks.once("init", () => {
+  game.settings.register(MODULE_ID, "defaultDirectionImages", {
+    name: "Default Directional Images",
+    scope: "world",
+    config: false,
+    type: Object,
+    default: {}
+  });
+
+  game.settings.registerMenu(MODULE_ID, "actorDirectionImageConfig", {
+    name: "Configure Actor Directional Images",
+    label: "Configure",
+    hint: "Set directional images per movement type for this actor.",
+    type: ActorDirectionImageConfig,
+    restricted: false
+  });
+});
+
+Hooks.on("renderActorSheet", (app, html, data) => {
+  const button = $(`<a class="configure-direction-images"><i class="fas fa-directions"></i> Directional Images</a>`);
+  button.click(() => new ActorDirectionImageConfig(app.actor).render(true));
+  html.closest('.app').find('.configure-sheet').before(button);
+});
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
   if (!("x" in updateData || "y" in updateData)) return;
@@ -21,8 +40,46 @@ Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
     dir = dy > 0 ? "S" : "N";
   }
 
-  if (dir && DIRECTION_IMAGES[dir]) {
-    await token.document.updateSource({ texture: {src: DIRECTION_IMAGES[dir] } });
-    token.draw();
+  if (!dir) return;
+
+  const actor = token.actor;
+  if (!actor) return;
+
+  const movementAction = token.document.movementAction || "walk";
+  const actorImages = actor.getFlag(MODULE_ID, "directionImages") || {};
+  const defaultImages = game.settings.get(MODULE_ID, "defaultDirectionImages");
+
+  const image = actorImages?.[movementAction]?.[dir] || defaultImages?.[movementAction]?.[dir];
+
+  if (image && token.document.texture.src !== image) {
+    await token.document.update({ texture: { src: image } });
   }
 });
+
+class ActorDirectionImageConfig extends FormApplication {
+  constructor(object) {
+    super(object);
+    this.actor = object;
+  }
+
+  static get defaultOptions() {
+    return mergeObject(super.defaultOptions, {
+      id: "actor-direction-image-config",
+      title: "Actor Directional Image Configuration",
+      template: "modules/token-orientation/templates/actor-direction-config.html",
+      width: 600,
+      height: "auto",
+      closeOnSubmit: true
+    });
+  }
+
+  getData() {
+    const config = duplicate(this.actor.getFlag(MODULE_ID, "directionImages") || {});
+    return { config };
+  }
+
+  async _updateObject(event, formData) {
+    const expanded = expandObject(formData);
+    await this.actor.setFlag(MODULE_ID, "directionImages", expanded.config);
+  }
+}
