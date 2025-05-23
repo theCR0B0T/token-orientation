@@ -34,34 +34,19 @@ Hooks.once("init", () => {
   });
 });
 
-Hooks.on("ready", () => {
+Hooks.on("renderCharacterActorSheet", (app, html, data) => {
   if (!game.settings.get(MODULE_ID, "enableModule")) return;
   const configPermission = game.settings.get(MODULE_ID, "configPermission");
+  if (game.user.role < configPermission) return;
 
-  const gameSystem = game.system.id;
-  if (!gameSystem || !CONFIG.Actor.sheetClasses.character) return;
+  const titleElement = html.closest('.app').find('.window-title');
+  if (!titleElement.length || html.find('.direction-image-config').length) return;
 
-  const sheetClass = CONFIG.Actor.sheetClasses.character["dnd5e.CharacterActorSheet"].cls;
-  //if (!sheetClass.prototype._originalRender) {
-    //sheetClass.prototype._originalRender = sheetClass.prototype._render;
-    //sheetClass.prototype._render = async function (...args) {
-      //await this._originalRender(...args);
-
-      if (game.user.role < configPermission) return;
-
-      const html = this.element;
-      const titleElement = html.find('.window-title');
-      if (!titleElement.length) return;
-
-      if (!html.find('.direction-image-config').length) {
-        const button = $(`<a class="direction-image-config" style="margin-left: 5px;" title="Configure Directional Images"><i class="fas fa-compass"></i></a>`);
-        button.on('click', () => {
-          new ActorDirectionImageConfig(this.actor).render(true);
-        });
-        titleElement.append(button);
-      }
-    //};
-  //}
+  const button = $(`<a class="direction-image-config" style="margin-left: 5px;" title="Configure Directional Images"><i class="fas fa-compass"></i></a>`);
+  button.on('click', () => {
+    new ActorDirectionImageConfig(app.actor).render(true);
+  });
+  titleElement.append(button);
 });
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
