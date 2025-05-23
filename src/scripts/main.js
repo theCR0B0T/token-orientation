@@ -44,20 +44,11 @@ Hooks.on("renderCharacterActorSheet", (app, html, data) => {
   if (!nav.length || !tabs.length) return;
 
   // Add a new navigation tab
-  const button = $(`<a class="item" data-tab="direction-images"><i class="fas fa-directions"></i> Directional Images</a>`);
-  nav.append(button);
-
-  // Add the new tab content
-  const content = $(`<div class="tab" data-tab="direction-images"></div>`);
-  content.append(`<div class="direction-config"></div>`);
-  tabs.last().after(content);
-
-  // Render the config form into the tab
-  const form = new ActorDirectionImageConfig(app.actor);
-  form.render(false, { renderContext: null, viewOnly: false });
-  form._renderInner().then(inner => {
-    content.find(".direction-config").append(inner);
+  const button = $(`<a class="item" data-tab="direction-images"><i class="ph=compass"></i> Directional Images</a>`);
+  button.on('click', () => {
+    new ActorDirectionImageConfig(app.actor).render(true);
   });
+  nav.append(button);
 });
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
