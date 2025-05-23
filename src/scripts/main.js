@@ -1,5 +1,7 @@
 const MODULE_ID = "token-orientation";
 
+import { ActorSheet5eCharacter } from "../../../systems/dnd5e/module/actor/sheets/character.js";
+
 Hooks.once("init", () => {
   game.settings.register(MODULE_ID, "enableModule", {
     name: "Enable Token Orientation Module",
@@ -34,34 +36,49 @@ Hooks.once("init", () => {
   });
 });
 
-Hooks.on("renderActorSheet", (app, html, data) => {
-  if (!game.settings.get(MODULE_ID, "enableModule")) return;
-  if (game.user.role < game.settings.get(MODULE_ID, "configPermission")) return;
+class TokenOrientationSheet extends ActorSheet5eCharacter {
+  static get defaultOptions() {
+    const options = super.defaultOptions;
+    options.tabs[0].groups.push("direction-images");
+    return options;
+  }
 
-  const navTabs = html.find("nav.tabs[data-group='primary']");
-  const tabContent = html.find(".sheet-body");
+  async _renderInner(...args) {
+    const html = await super._renderInner(...args);
 
-  if (!navTabs.length || !tabContent.length) return;
+    if (!game.settings.get(MODULE_ID, "enableModule")) return html;
+    if (game.user.role < game.settings.get(MODULE_ID, "configPermission")) return html;
 
-  // Create tab button with compass icon
-  const tabButton = $(`
-    <a class="item" data-tab="direction-images" data-action="tab">
-      <i class="fas fa-compass"></i>
-    </a>
-  `);
-  navTabs.append(tabButton);
+    const nav = html.querySelector("nav.tabs[data-group='primary']");
+    const sheetBody = html.querySelector(".sheet-body");
 
-  // Create tab content container
-  const tabPanel = $(`<div class="tab" data-tab="direction-images"></div>`);
-  const wrapper = $(`<div class="direction-config"></div>`);
-  tabPanel.append(wrapper);
-  tabContent.append(tabPanel);
+    if (!nav || !sheetBody) return html;
 
-  // Inject custom UI
-  const form = new ActorDirectionImageConfig(app.actor);
-  form.render(false);
-  form._renderInner().then(inner => {
-    wrapper.append(inner);
+    const tabButton = document.createElement("a");
+    tabButton.classList.add("item");
+    tabButton.dataset.tab = "direction-images";
+    tabButton.innerHTML = `<i class="fas fa-compass"></i>`;
+    nav.appendChild(tabButton);
+
+    const tabContent = document.createElement("div");
+    tabContent.classList.add("tab");
+    tabContent.dataset.tab = "direction-images";
+    tabContent.innerHTML = `<div class="direction-config"></div>`;
+    sheetBody.appendChild(tabContent);
+
+    const form = new ActorDirectionImageConfig(this.actor);
+    const inner = await form._renderInner();
+    tabContent.querySelector(".direction-config").appendChild(inner);
+
+    return html;
+  }
+}
+
+Hooks.once("init", () => {
+  Actors.unregisterSheet("dnd5e", ActorSheet5eCharacter);
+  Actors.registerSheet(MODULE_ID, TokenOrientationSheet, {
+    types: ["character"],
+    makeDefault: true
   });
 });
 
