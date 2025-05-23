@@ -11,7 +11,7 @@ export function addConfigButton(app, html, data) {
   if (!nav.length || !tabs.length) return;
 
   // Add a new navigation tab
-  const button = $(`<a class="item" data-tab="direction-images"><i class="ph=compass"></i> Directional Images</a>`);
+  const button = $(`<a class="item" data-tab="direction-images"><i class="fas fa-compass"></i></a>`);
   button.on('click', () => {
     new ActorDirectionImageConfig(app.actor).render(true);
   });
