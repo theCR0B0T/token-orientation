@@ -1,51 +1,104 @@
-<form autocomplete="off">
+<form class="direction-config-form">
+  <h2>Default Movement Images</h2>
+  <div class="direction-group" data-type="default">
+    {{#each (lookup config "default") as |img dir|}}
+    <div class="form-group">
+      <label>{{dir}}</label>
+      <input type="text" name="config.default.{{dir}}" value="{{img}}" placeholder="Image URL">
+      <img src="{{img}}" class="preview" style="max-width: 100px; max-height: 100px;">
+    </div>
+    {{/each}}
+    {{#unless (lookup config "default")}}
+    <div class="form-group">
+      <label>N</label>
+      <input type="text" name="config.default.N" value="">
+      <img class="preview" style="max-width: 100px; max-height: 100px;">
+    </div>
+    <div class="form-group">
+      <label>E</label>
+      <input type="text" name="config.default.E" value="">
+      <img class="preview" style="max-width: 100px; max-height: 100px;">
+    </div>
+    <div class="form-group">
+      <label>S</label>
+      <input type="text" name="config.default.S" value="">
+      <img class="preview" style="max-width: 100px; max-height: 100px;">
+    </div>
+    <div class="form-group">
+      <label>W</label>
+      <input type="text" name="config.default.W" value="">
+      <img class="preview" style="max-width: 100px; max-height: 100px;">
+    </div>
+    {{/unless}}
+  </div>
+
+  <hr>
+
+  <h2>Custom Movement Types</h2>
   <div id="movement-types">
     {{#each config as |dirs type|}}
-      <fieldset data-type="{{type}}">
-        <legend>{{type}}</legend>
+      {{#unless (eq type "default")}}
+      <fieldset class="movement-config" data-type="{{type}}">
+        <legend>
+          {{type}} <button type="button" class="remove-type" data-type="{{type}}">Remove</button>
+        </legend>
         {{#each dirs as |img dir|}}
-          <div class="form-group">
-            <label>{{dir}}</label>
-            <input type="text" name="config.{{@../key}}.{{dir}}" value="{{img}}" placeholder="Image URL for {{dir}}" />
-          </div>
+        <div class="form-group">
+          <label>{{dir}}</label>
+          <input type="text" name="config.{{@../type}}.{{dir}}" value="{{img}}">
+          <img src="{{img}}" class="preview" style="max-width: 100px; max-height: 100px;">
+        </div>
         {{/each}}
-        <button type="button" class="remove-type">Remove</button>
       </fieldset>
+      {{/unless}}
     {{/each}}
   </div>
+
   <div class="form-group">
-    <label>Add Movement Type</label>
-    <input type="text" id="new-type-name" placeholder="e.g., burrow" />
-    <button type="button" id="add-type">Add</button>
+    <label for="new-movement-type">Add Movement Type</label>
+    <input type="text" id="new-movement-type" placeholder="e.g., fly">
+    <button type="button" id="add-movement-type">Add</button>
   </div>
-  <footer>
-    <button type="submit">Save</button>
+
+  <footer class="sheet-footer flexrow">
+    <button type="submit"><i class="fas fa-save"></i> Save</button>
   </footer>
 </form>
 
 <script>
-  document.getElementById('add-type').addEventListener('click', () => {
-    const type = document.getElementById('new-type-name').value.trim();
-    if (!type) return;
-    const container = document.getElementById('movement-types');
-    const html = `
-      <fieldset data-type=\"${type}\">
-        <legend>${type}</legend>
-        ${['N', 'E', 'S', 'W'].map(dir => `
-          <div class=\"form-group\">
-            <label>${dir}</label>
-            <input type=\"text\" name=\"config.${type}.${dir}\" placeholder=\"Image URL for ${dir}\" />
-          </div>`).join('')}
-        <button type=\"button\" class=\"remove-type\">Remove</button>
-      </fieldset>
-    `;
-    container.insertAdjacentHTML('beforeend', html);
-  });
+  Hooks.once("renderActorDirectionImageConfig", (app, html) => {
+    const container = html[0].querySelector("#movement-types");
 
-  document.addEventListener('click', (event) => {
-    if (event.target.classList.contains('remove-type')) {
-      const fieldset = event.target.closest('fieldset');
-      if (fieldset) fieldset.remove();
-    }
+    html[0].querySelector("#add-movement-type").addEventListener("click", () => {
+      const newType = html[0].querySelector("#new-movement-type").value.trim();
+      if (!newType || container.querySelector(`[data-type=\"${newType}\"]`)) return;
+
+      const fieldset = document.createElement("fieldset");
+      fieldset.classList.add("movement-config");
+      fieldset.setAttribute("data-type", newType);
+      fieldset.innerHTML = `
+        <legend>
+          ${newType} <button type="button" class="remove-type" data-type="${newType}">Remove</button>
+        </legend>
+        ${["N", "E", "S", "W"].map(dir => `
+          <div class="form-group">
+            <label>${dir}</label>
+            <input type="text" name="config.${newType}.${dir}" value="">
+            <img class="preview" style="max-width: 100px; max-height: 100px;">
+          </div>
+        `).join("")}
+      `;
+      container.appendChild(fieldset);
+    });
+
+    html.on("click", ".remove-type", event => {
+      const type = event.currentTarget.dataset.type;
+      html.find(`fieldset[data-type=\"${type}\"]`).remove();
+    });
+
+    html.on("input", "input[type='text']", function () {
+      const img = this.closest(".form-group").querySelector("img");
+      img.src = this.value;
+    });
   });
 </script>

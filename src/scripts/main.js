@@ -1,6 +1,30 @@
 const MODULE_ID = "token-orientation";
 
 Hooks.once("init", () => {
+  game.settings.register(MODULE_ID, "enableModule", {
+    name: "Enable Token Orientation Module",
+    hint: "Turn on or off all features of the token-orientation module.",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
+  game.settings.register(MODULE_ID, "configPermission", {
+    name: "Who Can Configure Token Orientation",
+    hint: "Minimum role required to configure token orientation images.",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: CONST.USER_ROLES.GAMEMASTER,
+    choices: {
+      [CONST.USER_ROLES.PLAYER]: "Player",
+      [CONST.USER_ROLES.TRUSTED]: "Trusted Player",
+      [CONST.USER_ROLES.ASSISTANT]: "Assistant GM",
+      [CONST.USER_ROLES.GAMEMASTER]: "GM"
+    }
+  });
+
   game.settings.register(MODULE_ID, "defaultDirectionImages", {
     name: "Default Directional Images",
     scope: "world",
@@ -19,12 +43,19 @@ Hooks.once("init", () => {
 });
 
 Hooks.on("renderActorSheet", (app, html, data) => {
-  const button = $(`<a class="configure-direction-images"><i class="fas fa-directions"></i> Directional Images</a>`);
-  button.click(() => new ActorDirectionImageConfig(app.actor).render(true));
-  html.closest('.app').find('.configure-sheet').before(button);
+  if (!game.settings.get(MODULE_ID, "enableModule")) return;
+  if (game.user.role < game.settings.get(MODULE_ID, "configPermission")) return;
+
+  const traits = html.find(".sheet-body .tab .traits");
+  if (traits.length) {
+    const button = $(`<button type="button" class="directional-config-button"><i class="fas fa-directions"></i> Directional Images</button>`);
+    button.click(() => new ActorDirectionImageConfig(app.actor).render(true));
+    traits.append(button);
+  }
 });
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
+  if (!game.settings.get(MODULE_ID, "enableModule")) return;
   if (!("x" in updateData || "y" in updateData)) return;
 
   const token = canvas.tokens.get(tokenDoc.id);
@@ -45,11 +76,11 @@ Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
   const actor = token.actor;
   if (!actor) return;
 
-  const movementAction = token.document.movementAction || "walk";
+  const movementAction = token.document.movementAction || "default";
   const actorImages = actor.getFlag(MODULE_ID, "directionImages") || {};
-  const defaultImages = game.settings.get(MODULE_ID, "defaultDirectionImages");
+  const defaultImages = game.settings.get(MODULE_ID, "defaultDirectionImages") || {};
 
-  const image = actorImages?.[movementAction]?.[dir] || defaultImages?.[movementAction]?.[dir];
+  const image = actorImages?.[movementAction]?.[dir] || defaultImages?.default?.[dir];
 
   if (image && token.document.texture.src !== image) {
     await token.document.update({ texture: { src: image } });
