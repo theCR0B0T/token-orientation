@@ -34,19 +34,21 @@ Hooks.once("init", () => {
   });
 });
 
-Hooks.on("renderActorSheet5eCharacter", (app, html, data) => {
+Hooks.on("renderCharacterActor", (app, html, data) => {
   if (!game.settings.get(MODULE_ID, "enableModule")) return;
   const configPermission = game.settings.get(MODULE_ID, "configPermission");
   if (game.user.role < configPermission) return;
 
-  const titleElement = html.closest('.app').find('.window-title');
-  if (!titleElement.length || html.find('.direction-image-config').length) return;
+  const nav = $(html).find("nav.tabs-right");
+  const tabs = $(html).find(".sheet-body .tab")
+  if (!nav.length || !tabs.length) return;
 
-  const button = $(`<a class="direction-image-config" style="margin-left: 5px;" title="Configure Directional Images"><i class="fas fa-compass"></i></a>`);
+  // Add a new navigation tab
+  const button = $(`<a class="item" data-tab="direction-images"><i class="ph=compass"></i> Directional Images</a>`);
   button.on('click', () => {
     new ActorDirectionImageConfig(app.actor).render(true);
   });
-  titleElement.append(button);
+  nav.append(button);
 });
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
