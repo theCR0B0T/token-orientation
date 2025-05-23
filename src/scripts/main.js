@@ -39,14 +39,17 @@ Hooks.on("renderCharacterActorSheet", (app, html, data) => {
   const configPermission = game.settings.get(MODULE_ID, "configPermission");
   if (game.user.role < configPermission) return;
 
-  const titleElement = html.closest('.app').find('.window-title');
-  if (!titleElement.length || html.find('.direction-image-config').length) return;
+  const appElement = html[0]?.closest('.app');
+  if (!appElement) return;
+
+  const titleElement = appElement.querySelector('.window-title');
+  if (!titleElement || html.find('.direction-image-config').length) return;
 
   const button = $(`<a class="direction-image-config" style="margin-left: 5px;" title="Configure Directional Images"><i class="fas fa-compass"></i></a>`);
   button.on('click', () => {
     new ActorDirectionImageConfig(app.actor).render(true);
   });
-  titleElement.append(button);
+  $(titleElement).append(button);
 });
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
