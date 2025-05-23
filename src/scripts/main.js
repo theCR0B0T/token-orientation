@@ -39,17 +39,25 @@ Hooks.on("renderCharacterActorSheet", (app, html, data) => {
   const configPermission = game.settings.get(MODULE_ID, "configPermission");
   if (game.user.role < configPermission) return;
 
-  const appElement = html[0]?.closest('.app');
-  if (!appElement) return;
+  const nav = $(html).find("nav.sheet-navigation");
+  const tabs = $(html).find(".sheet-body .tab")
+  if (!nav.length || !tabs.length) return;
 
-  const titleElement = appElement.querySelector('.window-title');
-  if (!titleElement || html.find('.direction-image-config').length) return;
+  // Add a new navigation tab
+  const button = $(`<a class="item" data-tab="direction-images"><i class="fas fa-directions"></i> Directional Images</a>`);
+  nav.append(button);
 
-  const button = $(`<a class="direction-image-config" style="margin-left: 5px;" title="Configure Directional Images"><i class="fas fa-compass"></i></a>`);
-  button.on('click', () => {
-    new ActorDirectionImageConfig(app.actor).render(true);
+  // Add the new tab content
+  const content = $(`<div class="tab" data-tab="direction-images"></div>`);
+  content.append(`<div class="direction-config"></div>`);
+  tabs.last().after(content);
+
+  // Render the config form into the tab
+  const form = new ActorDirectionImageConfig(app.actor);
+  form.render(false, { renderContext: null, viewOnly: false });
+  form._renderInner().then(inner => {
+    content.find(".direction-config").append(inner);
   });
-  $(titleElement).append(button);
 });
 
 Hooks.on("preUpdateToken", async (tokenDoc, updateData, options, userId) => {
