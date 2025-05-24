@@ -20,10 +20,13 @@ export class ActorDirectionImageConfig extends FormApplication {
 
   getData() {
     const data = super.getData();
-    data.config = duplicate(this.actor.getFlag(MODULE_ID, "directionImages") || {
+    const config = duplicate(this.actor.getFlag(MODULE_ID, "directionImages") || {
       rules: [],
       defaults: { directionMode: "single", images: {} }
     });
+    data.config = config;
+    data.rules = config.rules;
+    data.defaults = config.defaults;
     data.movementActions = this.actor.system?.attributes?.movement
       ? Object.keys(this.actor.system.attributes.movement).filter(k => k !== "hover" && k !== "units")
       : ["walk", "fly", "swim", "burrow", "climb"];
@@ -34,10 +37,8 @@ export class ActorDirectionImageConfig extends FormApplication {
     super.activateListeners(html);
 
     html.find("#add-rule").on("click", () => {
-      const config = duplicate(this.object.getFlag(MODULE_ID, "directionImages")) || {};
-      config.rules = config.rules || [];
-
-      const newRule = {
+      const config = duplicate(this.actor.getFlag(MODULE_ID, "directionImages") || { rules: [] });
+      config.rules.push({
         conditions: {
           movement: "walk",
           status: "",
@@ -46,25 +47,22 @@ export class ActorDirectionImageConfig extends FormApplication {
         },
         directionMode: "nesw",
         images: {}
-      };
-
-      config.rules.push(newRule);
-
-      this.object.setFlag(MODULE_ID, "directionImages", config).then(() => this.render());
+      });
+      this.actor.setFlag(MODULE_ID, "directionImages", config).then(() => this.render());
     });
 
     html.find(".delete-rule").on("click", ev => {
       const index = Number(ev.currentTarget.dataset.index);
-      let config = duplicate(this.object.getFlag(MODULE_ID, "directionImages") || { rules: [] });
+      const config = duplicate(this.actor.getFlag(MODULE_ID, "directionImages") || { rules: [] });
       config.rules.splice(index, 1);
-      this.object.setFlag(MODULE_ID, "directionImages", config).then(() => this.render());
+      this.actor.setFlag(MODULE_ID, "directionImages", config).then(() => this.render());
     });
   }
 
   async _updateObject(event, formData) {
-    console.log("Submitted formData:", formData);
     const expanded = expandObject(formData);
-    console.log("Expanded config:", expanded.config);
-    await this.actor.setFlag(MODULE_ID, "directionImages", expanded.config);
+    const config = expanded.config || { rules: [], defaults: {} };
+    console.log("Expanded config:", config);
+    await this.actor.setFlag(MODULE_ID, "directionImages", config);
   }
 }
