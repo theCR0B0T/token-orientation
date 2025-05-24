@@ -62,7 +62,11 @@ export class ActorDirectionImageConfig extends FormApplication {
   async _updateObject(event, formData) {
     const expanded = expandObject(formData);
     const config = expanded.config || { rules: [], defaults: {} };
-    console.log("Expanded config:", config);
+
+    if (config.rules && typeof config.rules === "object" && !Array.isArray(config.rules)) {
+      config.rules = Object.values(config.rules);
+    }
+
     await this.actor.setFlag(MODULE_ID, "directionImages", config);
   }
 }
