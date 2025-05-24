@@ -15,4 +15,10 @@ Hooks.once("init", () => {
         return [];
     }
   });
+
+  // Register Handlebars helpers
+  Handlebars.registerHelper("inc", value => parseInt(value) + 1);
+  Handlebars.registerHelper("eq", (a, b) => a === b);
+  Handlebars.registerHelper("array", (...args) => args.slice(0, -1));
+  Handlebars.registerHelper("checked", value => value ? "checked" : "");
 });
