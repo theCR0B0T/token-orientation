@@ -9,12 +9,12 @@
       {{#each config.rules as |rule idx|}}
         <div class="rule-block" data-index="{{idx}}">
           <div class="rule-header">
-            <h3>Rule {{inc idx}}</h3>
-            <button type="button" class="delete-rule" data-index="{{idx}}"><i class="fas fa-trash"></i></button>
+            <input type="text" name="config.rules.{{idx}}.name" value="{{rule.name}}" placeholder="Rule Name" />
+            <button type="button" class="delete-rule" data-index="{{idx}}"><i class="fas fa-times"></i></button>
           </div>
 
-          <div class="rule-body grid-2col">
-            <div class="rule-conditions">
+          <div class="rule-grid">
+            <div class="rule-column">
               <div class="form-group">
                 <label>Movement Type</label>
                 <select name="config.rules.{{idx}}.conditions.movement">
@@ -23,54 +23,49 @@
                   {{/each}}
                 </select>
               </div>
+
               <div class="form-group">
                 <label>Status</label>
-                <input type="text" name="config.rules.{{idx}}.conditions.status" value="{{rule.conditions.status}}" placeholder="e.g. poisoned" />
+                <input type="text" name="config.rules.{{idx}}.conditions.status" value="{{rule.conditions.status}}" />
               </div>
+
               <div class="form-group">
                 <label>HP % Less Than</label>
                 <input type="number" name="config.rules.{{idx}}.conditions.hpBelow" value="{{rule.conditions.hpBelow}}" min="0" max="100" />
               </div>
-              <div class="form-group">
-                <label>In Combat</label>
-                <input type="checkbox" name="config.rules.{{idx}}.conditions.inCombat" {{#if rule.conditions.inCombat}}checked{{/if}} />
-              </div>
             </div>
 
-            <div class="rule-images">
+            <div class="rule-column">
               <div class="form-group">
                 <label>Direction Mode</label>
                 <select name="config.rules.{{idx}}.directionMode">
-                  <option value="single" {{#ifEquals rule.directionMode "single"}}selected{{/ifEquals}}>Single Image</option>
+                  <option value="single" {{#ifEquals rule.directionMode "single"}}selected{{/ifEquals}}>Single</option>
                   <option value="xy" {{#ifEquals rule.directionMode "xy"}}selected{{/ifEquals}}>X/Y Axis</option>
                   <option value="nesw" {{#ifEquals rule.directionMode "nesw"}}selected{{/ifEquals}}>N/S/E/W</option>
                 </select>
               </div>
 
-              <div class="directional-inputs grid">
-                {{#each (getDirectionFields rule.directionMode) as |dir|}}
-                  <div class="form-group direction-field">
-                    <label>{{dir}}</label>
-                    {{#if (lookup rule.images dir)}}
-                      <img src="{{lookup rule.images dir}}" class="preview" />
-                      <div class="path">{{lookup rule.images dir}}</div>
-                    {{/if}}
-                    <div class="input-group">
-                      <input type="text" name="config.rules.{{idx}}.images.{{dir}}" value="{{lookup rule.images dir}}" />
-                      <button type="button" class="file-picker" data-type="image" data-target="config.rules.{{idx}}.images.{{dir}}">
-                        <i class="fas fa-file-import"></i>
-                      </button>
-                    </div>
-                  </div>
-                {{/each}}
+              <div class="form-group checkbox">
+                <label><input type="checkbox" name="config.rules.{{idx}}.conditions.inCombat" {{#if rule.conditions.inCombat}}checked{{/if}} /> In Combat</label>
               </div>
             </div>
           </div>
+
+          <div class="directional-inputs {{rule.directionMode}}">
+            {{#each (getDirectionFields rule.directionMode) as |dir|}}
+              <div class="direction-field">
+                <label>{{dir}}</label>
+                <img src="{{lookup rule.images dir}}" width="64" height="64" />
+                <div class="input-group">
+                  <input type="text" name="config.rules.{{idx}}.images.{{dir}}" value="{{lookup rule.images dir}}" />
+                  <button type="button" class="file-picker" data-type="image" data-target="config.rules.{{idx}}.images.{{dir}}"><i class="fas fa-file-import"></i></button>
+                </div>
+              </div>
+            {{/each}}
+          </div>
         </div>
       {{/each}}
-      <div class="form-group">
-        <button type="button" id="add-rule" class="add-rule"><i class="fas fa-plus"></i> Add Rule</button>
-      </div>
+      <button type="button" id="add-rule"><i class="fas fa-plus"></i> Add Rule</button>
     </div>
   </section>
 
@@ -84,26 +79,21 @@
       </select>
     </div>
 
-    <div class="directional-inputs grid">
+    <div class="directional-inputs {{config.defaults.directionMode}}">
       {{#each (getDirectionFields config.defaults.directionMode) as |dir|}}
-        <div class="form-group direction-field">
+        <div class="direction-field">
           <label>{{dir}}</label>
-          {{#if (lookup config.defaults.images dir)}}
-            <img src="{{lookup config.defaults.images dir}}" class="preview" />
-            <div class="path">{{lookup config.defaults.images dir}}</div>
-          {{/if}}
+          <img src="{{lookup config.defaults.images dir}}" width="64" height="64" />
           <div class="input-group">
             <input type="text" name="config.defaults.images.{{dir}}" value="{{lookup config.defaults.images dir}}" />
-            <button type="button" class="file-picker" data-type="image" data-target="config.defaults.images.{{dir}}">
-              <i class="fas fa-file-import"></i>
-            </button>
+            <button type="button" class="file-picker" data-type="image" data-target="config.defaults.images.{{dir}}"><i class="fas fa-file-import"></i></button>
           </div>
         </div>
       {{/each}}
     </div>
   </section>
 
-  <footer class="sheet-footer">
-    <button type="submit" class="save-button"><i class="fas fa-save"></i> Save</button>
+  <footer>
+    <button type="submit"><i class="fas fa-save"></i> Save</button>
   </footer>
 </form>

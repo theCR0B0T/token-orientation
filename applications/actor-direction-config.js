@@ -24,6 +24,16 @@ export class ActorDirectionImageConfig extends FormApplication {
       rules: [],
       defaults: { directionMode: "single", images: {} }
     });
+
+    // Move default rule to the beginning if it exists
+    if (config.rules.length > 1) {
+      const defaultRuleIndex = config.rules.findIndex(r => !r.conditions.status && !r.conditions.hpBelow && !r.conditions.inCombat);
+      if (defaultRuleIndex > 0) {
+        const [defaultRule] = config.rules.splice(defaultRuleIndex, 1);
+        config.rules.unshift(defaultRule);
+      }
+    }
+
     data.config = config;
     data.rules = config.rules;
     data.defaults = config.defaults;
@@ -39,6 +49,7 @@ export class ActorDirectionImageConfig extends FormApplication {
     html.find("#add-rule").on("click", () => {
       const config = duplicate(this.actor.getFlag(MODULE_ID, "directionImages") || { rules: [] });
       config.rules.push({
+        name: "New Rule",
         conditions: {
           movement: "walk",
           status: "",

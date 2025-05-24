@@ -1,13 +1,18 @@
 .direction-config-form {
-  padding: 10px;
+  color: white;
+}
+
+.direction-config-form .tabs .item {
+  color: #ccc;
 }
 
 .rule-block {
   border: 1px solid #555;
   border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 15px;
-  background: #2c2c2c;
+  margin-bottom: 1em;
+  padding: 1em;
+  background-color: #222;
+  position: relative;
 }
 
 .rule-header {
@@ -16,40 +21,84 @@
   align-items: center;
 }
 
-.rule-body {
-  margin-top: 10px;
-  gap: 10px;
+.rule-header input {
+  flex: 1;
+  font-size: 1.1em;
+  padding: 0.2em;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
 }
 
-.grid-2col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+.rule-header .delete-rule {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 1.2em;
 }
 
-.directional-inputs.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
+.rule-grid {
+  display: flex;
+  gap: 1em;
+  margin-top: 1em;
 }
 
-.preview {
-  display: block;
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-  margin-bottom: 5px;
-  border: 1px solid #333;
+.rule-column {
+  flex: 1;
 }
 
-.path {
-  font-size: 0.75em;
+.form-group label {
   color: #aaa;
-  word-break: break-all;
-  margin-bottom: 5px;
 }
 
-.add-rule {
-  margin-top: 10px;
+.directional-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin-top: 1em;
+}
+
+.directional-inputs.nesw {
+  grid-template-columns: repeat(2, 1fr);
+  display: grid;
+}
+
+.directional-inputs.single,
+.directional-inputs.xy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+
+.direction-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+}
+
+.direction-field label {
+  color: #ccc;
+  margin-bottom: 0.2em;
+}
+
+.input-group {
+  display: flex;
+  gap: 0.25em;
   width: 100%;
+}
+
+.input-group input {
+  flex: 1;
+  background-color: #444;
+  color: white;
+  border: none;
+  padding: 0.2em;
+}
+
+.input-group .file-picker {
+  background: none;
+  border: none;
+  color: #ccc;
 }
