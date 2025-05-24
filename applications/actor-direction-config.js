@@ -62,7 +62,9 @@ export class ActorDirectionImageConfig extends FormApplication {
   }
 
   async _updateObject(event, formData) {
+    console.log("Submitted formData:", formData);
     const expanded = expandObject(formData);
+    console.log("Expanded config:", expanded.config);
     await this.actor.setFlag(MODULE_ID, "directionImages", expanded.config);
   }
 }
