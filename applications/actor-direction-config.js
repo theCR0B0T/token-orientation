@@ -34,8 +34,9 @@ export class ActorDirectionImageConfig extends FormApplication {
     super.activateListeners(html);
 
     html.find("#add-rule").on("click", () => {
-      const rulesContainer = html.find("#rules-container");
-      const index = rulesContainer.find(".rule-block").length;
+      const config = duplicate(this.object.getFlag(MODULE_ID, "directionImages")) || {};
+      config.rules = config.rules || [];
+
       const newRule = {
         conditions: {
           movement: "walk",
@@ -46,8 +47,9 @@ export class ActorDirectionImageConfig extends FormApplication {
         directionMode: "nesw",
         images: {}
       };
-      const config = this.object.getFlag(MODULE_ID, "directionImages") || { rules: [] };
+
       config.rules.push(newRule);
+
       this.object.setFlag(MODULE_ID, "directionImages", config).then(() => this.render());
     });
 
