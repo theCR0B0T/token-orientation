@@ -1,55 +1,108 @@
 <form class="flexcol" autocomplete="off">
-  <div id="movement-types" class="movement-type-list">
-    {{#each config as |cfg type|}}
-      <fieldset class="movement-type-group" data-type="{{type}}">
-        <legend>
-          <h3>{{type}}</h3>
-        </legend>
+  <nav class="sheet-tabs tabs" data-group="main-tabs">
+    <a class="item active" data-tab="rules">Image Rules</a>
+    <a class="item" data-tab="defaults">Global Defaults</a>
+  </nav>
 
-        <div class="form-group">
-          <label>Layout</label>
-          <select name="config.{{type}}.layout" class="layout-select">
-            <option value="single" {{#ifEquals cfg.layout "single"}}selected{{/ifEquals}}>Single Image</option>
-            <option value="axis" {{#ifEquals cfg.layout "axis"}}selected{{/ifEquals}}>X/Y Axis</option>
-            <option value="cardinal" {{#ifEquals cfg.layout "cardinal"}}selected{{/ifEquals}}>Cardinal (N/E/S/W)</option>
-          </select>
-        </div>
+  <section class="tab active" data-tab="rules">
+    <div id="rules-container">
+      {{#each config.rules as |rule idx|}}
+        <div class="rule-block" data-index="{{idx}}">
+          <header class="rule-header">
+            <label>Conditions</label>
+            <button type="button" class="delete-rule" data-index="{{idx}}"><i class="fas fa-trash"></i></button>
+          </header>
 
-        <div class="direction-images">
-          {{#each cfg.images as |img dir|}}
-          <div class="form-group image-picker" data-dir="{{dir}}">
-            <label>{{toUpperCase dir}}</label>
-            <div class="form-fields">
-              <input type="text" name="config.{{@../key}}.images.{{dir}}" value="{{img}}" data-dtype="String">
-              <button type="button" class="file-picker" data-type="imagevideo" data-target="config.{{@../key}}.images.{{dir}}">
-                <i class="fas fa-file-import fa-fw"></i>
-              </button>
+          <div class="rule-conditions">
+            <div class="form-group">
+              <label>Movement Type</label>
+              <select name="config.rules.{{idx}}.conditions.movement">
+                {{#each ../movementActions as |action|}}
+                  <option value="{{action}}" {{#ifEquals rule.conditions.movement action}}selected{{/ifEquals}}>{{action}}</option>
+                {{/each}}
+              </select>
             </div>
-            {{#if img}}
-            <img src="{{img}}" class="preview-img" style="max-height: 64px;"/>
-            {{/if}}
+
+            <div class="form-group">
+              <label>Status</label>
+              <input type="text" name="config.rules.{{idx}}.conditions.status" value="{{rule.conditions.status}}" placeholder="e.g. poisoned" />
+            </div>
+
+            <div class="form-group">
+              <label>HP % Less Than</label>
+              <input type="number" name="config.rules.{{idx}}.conditions.hpBelow" value="{{rule.conditions.hpBelow}}" min="0" max="100" />
+            </div>
+
+            <div class="form-group">
+              <label>In Combat</label>
+              <input type="checkbox" name="config.rules.{{idx}}.conditions.inCombat" {{#if rule.conditions.inCombat}}checked{{/if}} />
+            </div>
           </div>
-          {{/each}}
+
+          <div class="rule-images">
+            <div class="form-group">
+              <label>Direction Mode</label>
+              <select name="config.rules.{{idx}}.directionMode">
+                <option value="single" {{#ifEquals rule.directionMode "single"}}selected{{/ifEquals}}>Single Image</option>
+                <option value="xy" {{#ifEquals rule.directionMode "xy"}}selected{{/ifEquals}}>X/Y Axis</option>
+                <option value="nesw" {{#ifEquals rule.directionMode "nesw"}}selected{{/ifEquals}}>N/S/E/W</option>
+              </select>
+            </div>
+
+            <div class="directional-inputs">
+              {{#each (getDirectionFields rule.directionMode) as |dir|}}
+                <div class="form-group direction-field">
+                  <label>{{dir}}</label>
+                  <div class="image-preview">
+                    {{#if (lookup rule.images dir)}}
+                      <img src="{{lookup rule.images dir}}" width="64" height="64" />
+                      <div class="path">{{lookup rule.images dir}}</div>
+                    {{/if}}
+                    <div class="input-group">
+                      <input type="text" name="config.rules.{{../idx}}.images.{{dir}}" value="{{lookup rule.images dir}}" />
+                      <button type="button" class="file-picker" data-type="image" data-target="config.rules.{{../idx}}.images.{{dir}}"><i class="fas fa-file-import"></i></button>
+                    </div>
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          </div>
         </div>
-
-        <button type="button" class="remove-type" style="margin-top: 10px;">Remove</button>
-      </fieldset>
-    {{/each}}
-  </div>
-
-  <div class="form-group">
-    <label>Add Movement Type</label>
-    <div class="form-fields">
-      <select id="new-type-name">
-        {{#each movementActions}}
-        <option value="{{this}}">{{this}}</option>
-        {{/each}}
-      </select>
-      <button type="button" id="add-type"><i class="fas fa-plus"></i></button>
+      {{/each}}
+      <button type="button" id="add-rule">Add Rule</button>
     </div>
-  </div>
+  </section>
 
-  <footer class="sheet-footer">
-    <button type="submit" class="dialog-button default">Save</button>
+  <section class="tab" data-tab="defaults">
+    <div class="form-group">
+      <label>Global Direction Mode</label>
+      <select name="config.defaults.directionMode">
+        <option value="single">Single</option>
+        <option value="xy">X/Y Axis</option>
+        <option value="nesw">N/S/E/W</option>
+      </select>
+    </div>
+
+    <div class="directional-inputs">
+      {{#each (getDirectionFields config.defaults.directionMode) as |dir|}}
+        <div class="form-group direction-field">
+          <label>{{dir}}</label>
+          <div class="image-preview">
+            {{#if (lookup config.defaults.images dir)}}
+              <img src="{{lookup config.defaults.images dir}}" width="64" height="64" />
+              <div class="path">{{lookup config.defaults.images dir}}</div>
+            {{/if}}
+            <div class="input-group">
+              <input type="text" name="config.defaults.images.{{dir}}" value="{{lookup config.defaults.images dir}}" />
+              <button type="button" class="file-picker" data-type="image" data-target="config.defaults.images.{{dir}}"><i class="fas fa-file-import"></i></button>
+            </div>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </section>
+
+  <footer>
+    <button type="submit"><i class="fas fa-save"></i> Save</button>
   </footer>
 </form>
