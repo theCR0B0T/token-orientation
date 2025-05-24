@@ -8,9 +8,12 @@
     <div id="rules-container">
       {{#each config.rules as |rule idx|}}
         <div class="rule-block" data-index="{{idx}}">
+          <button type="button" class="delete-rule" data-index="{{idx}}" title="Delete Rule">
+            <i class="fas fa-trash"></i>
+          </button>
+
           <div class="rule-header">
             <input type="text" name="config.rules.{{idx}}.name" value="{{rule.name}}" placeholder="Rule Name" />
-            <button type="button" class="delete-rule" data-index="{{idx}}"><i class="fas fa-trash"></i></button>
           </div>
 
           <div class="rule-grid">
@@ -26,7 +29,7 @@
 
               <div class="form-group">
                 <label>Status</label>
-                <input type="text" name="config.rules.{{idx}}.conditions.status" value="{{rule.conditions.status}}" />
+                <input type="text" name="config.rules.{{idx}}.conditions.status" value="{{rule.conditions.status}}" placeholder="e.g. poisoned" />
               </div>
 
               <div class="form-group">
@@ -39,14 +42,15 @@
               <div class="form-group">
                 <label>Direction Mode</label>
                 <select name="config.rules.{{idx}}.directionMode">
-                  <option value="single" {{#ifEquals rule.directionMode "single"}}selected{{/ifEquals}}>Single</option>
+                  <option value="single" {{#ifEquals rule.directionMode "single"}}selected{{/ifEquals}}>Single Image</option>
                   <option value="xy" {{#ifEquals rule.directionMode "xy"}}selected{{/ifEquals}}>X/Y Axis</option>
                   <option value="nesw" {{#ifEquals rule.directionMode "nesw"}}selected{{/ifEquals}}>N/S/E/W</option>
                 </select>
               </div>
 
-              <div class="form-group checkbox">
-                <label><input type="checkbox" name="config.rules.{{idx}}.conditions.inCombat" {{#if rule.conditions.inCombat}}checked{{/if}} /> In Combat</label>
+              <div class="form-group checkbox-group">
+                <label>In Combat</label>
+                <input type="checkbox" name="config.rules.{{idx}}.conditions.inCombat" {{#if rule.conditions.inCombat}}checked{{/if}} />
               </div>
             </div>
           </div>
@@ -58,7 +62,9 @@
                 <img src="{{lookup rule.images dir}}" width="64" height="64" />
                 <div class="input-group">
                   <input type="text" name="config.rules.{{idx}}.images.{{dir}}" value="{{lookup rule.images dir}}" />
-                  <button type="button" class="file-picker" data-type="image" data-target="config.rules.{{idx}}.images.{{dir}}"><i class="fas fa-file-import"></i></button>
+                  <button type="button" class="file-picker" data-type="image" data-target="config.rules.{{idx}}.images.{{dir}}">
+                    <i class="fas fa-file-import"></i>
+                  </button>
                 </div>
               </div>
             {{/each}}
@@ -86,7 +92,9 @@
           <img src="{{lookup config.defaults.images dir}}" width="64" height="64" />
           <div class="input-group">
             <input type="text" name="config.defaults.images.{{dir}}" value="{{lookup config.defaults.images dir}}" />
-            <button type="button" class="file-picker" data-type="image" data-target="config.defaults.images.{{dir}}"><i class="fas fa-file-import"></i></button>
+            <button type="button" class="file-picker" data-type="image" data-target="config.defaults.images.{{dir}}">
+              <i class="fas fa-file-import"></i>
+            </button>
           </div>
         </div>
       {{/each}}
