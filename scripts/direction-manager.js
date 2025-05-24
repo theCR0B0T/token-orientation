@@ -86,6 +86,7 @@ export async function handleTokenMove(tokenDoc, updateData, options, userId) {
   }
 
   if (image && token.document.texture.src !== image) {
-    await token.document.update({ texture: { src: image } });
+    await token.document.updateSource({ texture: { src: image } });
+    token.draw();
   }
 }
