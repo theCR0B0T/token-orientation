@@ -10,7 +10,7 @@
   ],
   "esmodules": [
     "main.js",
-    "scrips/constants.js",
+    "scripts/constants.js",
     "scripts/helpers.js"
   ],
   "template": [
