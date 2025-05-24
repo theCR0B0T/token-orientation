@@ -1,0 +1,55 @@
+.direction-config-form {
+  padding: 10px;
+}
+
+.rule-block {
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+  background: #2c2c2c;
+}
+
+.rule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rule-body {
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.directional-inputs.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.preview {
+  display: block;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 5px;
+  border: 1px solid #333;
+}
+
+.path {
+  font-size: 0.75em;
+  color: #aaa;
+  word-break: break-all;
+  margin-bottom: 5px;
+}
+
+.add-rule {
+  margin-top: 10px;
+  width: 100%;
+}
