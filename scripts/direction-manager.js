@@ -6,7 +6,7 @@ import { MODULE_ID } from "./constants.js";
 function matchesConditions(token, rule) {
   const cond = rule.conditions || {};
   const movement = token.document.movementAction || "walk";
-  const statusSet = new Set(token.actor?.effects?.map(e => e.label.toLowerCase()));
+  //const statusSet = new Set(token.actor?.effects?.map(e => e.label.toLowerCase()));
 
   const hp = token.actor?.system?.attributes?.hp;
   const hpBelow = cond.hpBelow != null && hp ? (hp.value / hp.max) * 100 < cond.hpBelow : true;
@@ -14,7 +14,7 @@ function matchesConditions(token, rule) {
 
   return (
     (!cond.movement || cond.movement === movement) &&
-    (!cond.status || statusSet.has(cond.status.toLowerCase())) &&
+    //(!cond.status || statusSet.has(cond.status.toLowerCase())) &&
     hpBelow &&
     inCombat
   );
