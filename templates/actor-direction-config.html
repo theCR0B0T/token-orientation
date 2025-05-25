@@ -8,12 +8,11 @@
     <div id="rules-container">
       {{#each config.rules as |rule idx|}}
         <div class="rule-block" data-index="{{idx}}">
-          <button type="button" class="delete-rule" data-index="{{idx}}" title="Delete Rule">
-            <i class="fas fa-trash"></i>
-          </button>
-
           <div class="rule-header">
             <input type="text" name="config.rules.{{idx}}.name" value="{{rule.name}}" placeholder="Rule Name" />
+            <button type="button" class="delete-rule" data-index="{{idx}}" title="Delete Rule">
+              <i class="fas fa-trash"></i>
+            </button>
           </div>
 
           <div class="rule-grid">

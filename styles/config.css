@@ -9,7 +9,7 @@
   color: white;
 }
 
-.direction-config-form button {
+.direction-config-form button, .direction-config-form.tabs nav {
   color: white;
 }
 
@@ -86,7 +86,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 180px;
+  width: 270px;
 }
 
 .direction-field label {
