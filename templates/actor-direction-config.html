@@ -15,11 +15,62 @@
       <div class="rule-header">
         <h2>Global Defaults</h2>
       </div>
+      {{!-- Inline directionRuleContent for Global Defaults --}}
+      <div class="rule-grid">
+        <div class="rule-column">
+          <div class="form-group">
+            <label>Movement Type</label>
+            <select name="config.defaults.conditions.movement">
+              {{#each movementActions as |action|}}
+                <option value="{{action}}" {{#ifEquals ../defaults.conditions.movement action}}selected{{/ifEquals}}>{{action}}</option>
+              {{/each}}
+            </select>
+          </div>
 
-      <!-- INLINE CONTENT FOR GLOBAL DEFAULTS -->
-      {{> @root._inlineRuleBlock idx=0 rule=defaults isDefault=true }}
+          <div class="form-group">
+            <label>Status</label>
+            <input type="text" name="config.defaults.conditions.status" value="{{defaults.conditions.status}}" />
+          </div>
 
+          <div class="form-group">
+            <label>HP % Less Than</label>
+            <input type="number" name="config.defaults.conditions.hpBelow" value="{{defaults.conditions.hpBelow}}" min="0" max="100" />
+          </div>
+        </div>
+
+        <div class="rule-column">
+          <div class="form-group">
+            <label>Direction Mode</label>
+            <select name="config.defaults.directionMode">
+              <option value="single" {{#ifEquals defaults.directionMode "single"}}selected{{/ifEquals}}>Single Image</option>
+              <option value="xy" {{#ifEquals defaults.directionMode "xy"}}selected{{/ifEquals}}>X/Y Axis</option>
+              <option value="nesw" {{#ifEquals defaults.directionMode "nesw"}}selected{{/ifEquals}}>N/S/E/W</option>
+            </select>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>In Combat</label>
+            <input type="checkbox" name="config.defaults.conditions.inCombat" {{#if defaults.conditions.inCombat}}checked{{/if}} />
+          </div>
+        </div>
+      </div>
+
+      <div class="directional-inputs {{defaults.directionMode}}">
+        {{#each (getDirectionFields defaults.directionMode) as |dir|}}
+          <div class="direction-field">
+            <label>{{dir}}</label>
+            <img src="{{lookup defaults.images dir}}" width="64" height="64" />
+            <div class="input-group">
+              <input type="text" name="config.defaults.images.{{dir}}" value="{{lookup defaults.images dir}}" />
+              <button type="button" class="file-picker" data-type="image" data-target="config.defaults.images.{{dir}}">
+                <i class="fas fa-file-import"></i>
+              </button>
+            </div>
+          </div>
+        {{/each}}
+      </div>
     </div>
+
   {{else}}
     {{#with (lookup rules (dec activeRuleIndex)) as |rule|}}
       <div class="rule-block" data-index="{{../activeRuleIndex}}">
@@ -30,9 +81,60 @@
           </button>
         </div>
 
-        <!-- INLINE CONTENT FOR SPECIFIC RULE -->
-        {{> @root._inlineRuleBlock idx=activeRuleIndex rule=rule isDefault=false }}
+        {{!-- Inline directionRuleContent for user rule --}}
+        <div class="rule-grid">
+          <div class="rule-column">
+            <div class="form-group">
+              <label>Movement Type</label>
+              <select name="config.rules.{{dec ../activeRuleIndex}}.conditions.movement">
+                {{#each ../movementActions as |action|}}
+                  <option value="{{action}}" {{#ifEquals rule.conditions.movement action}}selected{{/ifEquals}}>{{action}}</option>
+                {{/each}}
+              </select>
+            </div>
 
+            <div class="form-group">
+              <label>Status</label>
+              <input type="text" name="config.rules.{{dec ../activeRuleIndex}}.conditions.status" value="{{rule.conditions.status}}" />
+            </div>
+
+            <div class="form-group">
+              <label>HP % Less Than</label>
+              <input type="number" name="config.rules.{{dec ../activeRuleIndex}}.conditions.hpBelow" value="{{rule.conditions.hpBelow}}" min="0" max="100" />
+            </div>
+          </div>
+
+          <div class="rule-column">
+            <div class="form-group">
+              <label>Direction Mode</label>
+              <select name="config.rules.{{dec ../activeRuleIndex}}.directionMode">
+                <option value="single" {{#ifEquals rule.directionMode "single"}}selected{{/ifEquals}}>Single Image</option>
+                <option value="xy" {{#ifEquals rule.directionMode "xy"}}selected{{/ifEquals}}>X/Y Axis</option>
+                <option value="nesw" {{#ifEquals rule.directionMode "nesw"}}selected{{/ifEquals}}>N/S/E/W</option>
+              </select>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label>In Combat</label>
+              <input type="checkbox" name="config.rules.{{dec ../activeRuleIndex}}.conditions.inCombat" {{#if rule.conditions.inCombat}}checked{{/if}} />
+            </div>
+          </div>
+        </div>
+
+        <div class="directional-inputs {{rule.directionMode}}">
+          {{#each (getDirectionFields rule.directionMode) as |dir|}}
+            <div class="direction-field">
+              <label>{{dir}}</label>
+              <img src="{{lookup rule.images dir}}" width="64" height="64" />
+              <div class="input-group">
+                <input type="text" name="config.rules.{{dec ../activeRuleIndex}}.images.{{dir}}" value="{{lookup rule.images dir}}" />
+                <button type="button" class="file-picker" data-type="image" data-target="config.rules.{{dec ../activeRuleIndex}}.images.{{dir}}">
+                  <i class="fas fa-file-import"></i>
+                </button>
+              </div>
+            </div>
+          {{/each}}
+        </div>
       </div>
     {{/with}}
   {{/ifEquals}}
@@ -41,59 +143,3 @@
     <button type="submit"><i class="fas fa-save"></i> Save</button>
   </footer>
 </form>
-
-{{#*inline "_inlineRuleBlock"}}
-  <div class="rule-grid">
-    <div class="rule-column">
-      <div class="form-group">
-        <label>Movement Type</label>
-        <select name="config.{{#unless isDefault}}rules.{{dec idx}}{{else}}defaults{{/unless}}.conditions.movement">
-          {{#each ../movementActions as |action|}}
-            <option value="{{action}}" {{#ifEquals rule.conditions.movement action}}selected{{/ifEquals}}>{{action}}</option>
-          {{/each}}
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Status</label>
-        <input type="text" name="config.{{#unless isDefault}}rules.{{dec idx}}{{else}}defaults{{/unless}}.conditions.status" value="{{rule.conditions.status}}" />
-      </div>
-
-      <div class="form-group">
-        <label>HP % Less Than</label>
-        <input type="number" name="config.{{#unless isDefault}}rules.{{dec idx}}{{else}}defaults{{/unless}}.conditions.hpBelow" value="{{rule.conditions.hpBelow}}" min="0" max="100" />
-      </div>
-    </div>
-
-    <div class="rule-column">
-      <div class="form-group">
-        <label>Direction Mode</label>
-        <select name="config.{{#unless isDefault}}rules.{{dec idx}}{{else}}defaults{{/unless}}.directionMode">
-          <option value="single" {{#ifEquals rule.directionMode "single"}}selected{{/ifEquals}}>Single Image</option>
-          <option value="xy" {{#ifEquals rule.directionMode "xy"}}selected{{/ifEquals}}>X/Y Axis</option>
-          <option value="nesw" {{#ifEquals rule.directionMode "nesw"}}selected{{/ifEquals}}>N/S/E/W</option>
-        </select>
-      </div>
-
-      <div class="form-group checkbox-group">
-        <label>In Combat</label>
-        <input type="checkbox" name="config.{{#unless isDefault}}rules.{{dec idx}}{{else}}defaults{{/unless}}.conditions.inCombat" {{#if rule.conditions.inCombat}}checked{{/if}} />
-      </div>
-    </div>
-  </div>
-
-  <div class="directional-inputs {{rule.directionMode}}">
-    {{#each (getDirectionFields rule.directionMode) as |dir|}}
-      <div class="direction-field">
-        <label>{{dir}}</label>
-        <img src="{{lookup rule.images dir}}" width="64" height="64" />
-        <div class="input-group">
-          <input type="text" name="config.{{#unless isDefault}}rules.{{dec idx}}{{else}}defaults{{/unless}}.images.{{dir}}" value="{{lookup rule.images dir}}" />
-          <button type="button" class="file-picker" data-type="image" data-target="config.{{#unless isDefault}}rules.{{dec idx}}{{else}}defaults{{/unless}}.images.{{dir}}">
-            <i class="fas fa-file-import"></i>
-          </button>
-        </div>
-      </div>
-    {{/each}}
-  </div>
-{{/inline}}
