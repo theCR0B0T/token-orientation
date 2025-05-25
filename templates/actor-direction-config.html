@@ -15,7 +15,10 @@
       <div class="rule-header">
         <h2>Global Defaults</h2>
       </div>
-      {{> directionRuleContent idx=0 rule=defaults isDefault=true }}
+
+      <!-- INLINE CONTENT FOR GLOBAL DEFAULTS -->
+      {{> @root._inlineRuleBlock idx=0 rule=defaults isDefault=true }}
+
     </div>
   {{else}}
     {{#with (lookup rules (dec activeRuleIndex)) as |rule|}}
@@ -26,7 +29,10 @@
             <i class="fas fa-trash"></i>
           </button>
         </div>
-        {{> directionRuleContent idx=activeRuleIndex rule=rule isDefault=false }}
+
+        <!-- INLINE CONTENT FOR SPECIFIC RULE -->
+        {{> @root._inlineRuleBlock idx=activeRuleIndex rule=rule isDefault=false }}
+
       </div>
     {{/with}}
   {{/ifEquals}}
@@ -36,7 +42,7 @@
   </footer>
 </form>
 
-<script id="directionRuleContent" type="text/x-handlebars-template">
+{{#*inline "_inlineRuleBlock"}}
   <div class="rule-grid">
     <div class="rule-column">
       <div class="form-group">
@@ -90,4 +96,4 @@
       </div>
     {{/each}}
   </div>
-</script>
+{{/inline}}
