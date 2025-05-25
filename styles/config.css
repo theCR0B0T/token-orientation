@@ -136,3 +136,8 @@
   border: none;
   color: #ccc;
 }
+
+.select-options option {
+    background-color: #2a2a2a;
+    color: white;
+}

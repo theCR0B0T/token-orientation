@@ -21,4 +21,7 @@ Hooks.once("init", () => {
   Handlebars.registerHelper("eq", (a, b) => a === b);
   Handlebars.registerHelper("array", (...args) => args.slice(0, -1));
   Handlebars.registerHelper("checked", value => value ? "checked" : "");
+  Handlebars.registerHelper('dec', function (value) {
+    return parseInt(value, 10) - 1;
+  });
 });
